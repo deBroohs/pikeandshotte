@@ -1945,33 +1945,42 @@ select {
 }
 
 .armies-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "modes menu"
+    "solo menu";
+  gap: 12px 18px;
+  align-items: start;
 }
 
 .armies-menu-row {
+  grid-area: menu;
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 10px;
   flex-wrap: wrap;
 }
 
 .armies-mode-switch {
-  display: inline-grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-area: modes;
+  display: inline-flex;
+  flex-wrap: nowrap;
   gap: 8px;
   padding: 6px;
   border-radius: 999px;
   border: 1px solid rgba(84, 39, 20, 0.14);
   background: rgba(255, 250, 243, 0.8);
   box-shadow: 0 10px 24px rgba(84, 39, 20, 0.08);
+  width: max-content;
+  min-width: max-content;
+  justify-self: start;
 }
 
 .armies-mode-button {
   min-height: 42px;
+  min-width: 162px;
   padding: 10px 18px;
   border: 1px solid rgba(84, 39, 20, 0.14);
   border-radius: 999px;
@@ -1979,6 +1988,7 @@ select {
   color: var(--ink-soft);
   font: 700 0.9rem/1 var(--ui-font);
   cursor: pointer;
+  white-space: nowrap;
   transition:
     transform var(--transition),
     background var(--transition),
@@ -1999,14 +2009,26 @@ select {
 }
 
 .solo-army-switch {
+  grid-area: solo;
   display: inline-grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-  padding: 6px;
-  border-radius: 999px;
-  border: 1px solid rgba(84, 39, 20, 0.14);
-  background: rgba(255, 250, 243, 0.8);
+  gap: 10px;
+  padding: 14px;
+  border-radius: 24px;
+  border: 1px solid rgba(84, 39, 20, 0.12);
+  background: linear-gradient(160deg, rgba(255, 252, 247, 0.92), rgba(241, 232, 214, 0.9));
   box-shadow: 0 10px 24px rgba(84, 39, 20, 0.08);
+  justify-self: start;
+  width: min(440px, 100%);
+}
+
+.solo-army-switch::before {
+  content: "Выбор стороны";
+  grid-column: 1 / -1;
+  color: var(--ink-soft);
+  font: 700 0.74rem/1 var(--ui-font);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
 .solo-army-switch[hidden] {
@@ -2014,11 +2036,15 @@ select {
 }
 
 .solo-army-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
   min-height: 42px;
-  padding: 10px 18px;
+  padding: 12px 18px;
   border: 1px solid rgba(84, 39, 20, 0.14);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.62);
+  background: rgba(255, 255, 255, 0.72);
   color: var(--ink-soft);
   font: 700 0.88rem/1 var(--ui-font);
   cursor: pointer;
@@ -2028,6 +2054,14 @@ select {
     color var(--transition),
     border-color var(--transition),
     box-shadow var(--transition);
+}
+
+.solo-army-button::before {
+  content: "";
+  width: 11px;
+  height: 11px;
+  border-radius: 999px;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.42);
 }
 
 .solo-army-button:hover {
@@ -2040,10 +2074,18 @@ select {
   border-color: var(--side-blue-soft-border);
 }
 
+.solo-army-button[data-army-id="blue"]::before {
+  background: linear-gradient(135deg, var(--side-blue-strong-start), var(--side-blue-strong-end));
+}
+
 .solo-army-button[data-army-id="red"] {
   background: linear-gradient(145deg, var(--side-red-soft-start), var(--side-red-soft-end));
   color: var(--side-red-soft-text);
   border-color: var(--side-red-soft-border);
+}
+
+.solo-army-button[data-army-id="red"]::before {
+  background: linear-gradient(135deg, var(--side-red-strong-start), var(--side-red-strong-end));
 }
 
 .solo-army-button[data-army-id="blue"].is-active {
@@ -2206,10 +2248,11 @@ select {
 
 .armies-grid.is-solo-view {
   grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
 }
 
 .armies-grid.is-solo-view .army-shell {
-  max-width: 980px;
+  max-width: 1180px;
   justify-self: center;
   width: 100%;
 }
@@ -2289,6 +2332,18 @@ select {
 }
 
 @media (max-width: 1180px) {
+  .armies-toolbar {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "modes"
+      "solo"
+      "menu";
+  }
+
+  .armies-menu-row {
+    justify-content: flex-start;
+  }
+
   .phase-strip {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
@@ -2341,6 +2396,16 @@ select {
   .armies-mode-switch,
   .solo-army-switch {
     width: 100%;
+    min-width: 0;
+  }
+
+  .armies-mode-switch {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .armies-mode-button {
+    min-width: 0;
   }
 
   .utility-menu-inline {
