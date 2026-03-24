@@ -1,0 +1,5 @@
+.edge-headless/
+.edge-test-profile/
+tmp-*.txt
+Thumbs.db
+Desktop.ini
