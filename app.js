@@ -587,6 +587,7 @@
       return false;
     }
 
+    closeUtilityMenu("army-library-panel");
     state = preset.buildState();
     renderAll();
     setActiveTab("armies");
@@ -915,6 +916,7 @@
     state.armies[armyId].name = nextArmy.name;
     state.armies[armyId].objective = nextArmy.objective;
     state.armies[armyId].battalias = nextArmy.battalias;
+    closeUtilityMenu("army-library-panel");
     renderAll();
     setActiveTab("armies");
     return true;
@@ -1527,16 +1529,12 @@
     }
 
     if (action === "load-army-preset") {
-      if (loadArmyPreset(trigger.dataset.presetId, trigger.dataset.armyId)) {
-        closeClosestUtilityMenu(trigger);
-      }
+      loadArmyPreset(trigger.dataset.presetId, trigger.dataset.armyId);
       return;
     }
 
     if (action === "load-demo-preset") {
-      if (loadDemoPreset(trigger.dataset.presetId)) {
-        closeClosestUtilityMenu(trigger);
-      }
+      loadDemoPreset(trigger.dataset.presetId);
       return;
     }
 
