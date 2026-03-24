@@ -78,8 +78,20 @@
               <button class="armies-mode-button is-active" type="button" data-action="set-army-view" data-army-view="builder" aria-pressed="true">
                 Конструктор армии
               </button>
+              <button class="armies-mode-button" type="button" data-action="set-army-view" data-army-view="solo" aria-pressed="false">
+                Одна армия
+              </button>
               <button class="armies-mode-button" type="button" data-action="set-army-view" data-army-view="game" aria-pressed="false">
                 Игровой стол
+              </button>
+            </div>
+
+            <div id="solo-army-switch" class="solo-army-switch" hidden>
+              <button class="solo-army-button is-active" type="button" data-action="set-solo-army" data-army-id="blue" aria-pressed="true">
+                Синяя армия
+              </button>
+              <button class="solo-army-button" type="button" data-action="set-solo-army" data-army-id="red" aria-pressed="false">
+                Красная армия
               </button>
             </div>
 

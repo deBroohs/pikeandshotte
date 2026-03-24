@@ -93,6 +93,7 @@
       turn: 1,
       activePhaseIndex: 0,
       armyView: "builder",
+      soloArmyId: "blue",
       globalNotes: "",
       armies: {
         blue: createArmy("blue", "Синяя армия"),
@@ -900,7 +901,6 @@
     }
 
     const nextArmy = createPresetArmy(preset.army);
-    state.armyView = "builder";
     state.armies[armyId].name = nextArmy.name;
     state.armies[armyId].objective = nextArmy.objective;
     state.armies[armyId].battalias = nextArmy.battalias;
@@ -930,7 +930,8 @@
 
     fresh.turn = Math.max(1, Number(candidate.turn) || 1);
     fresh.activePhaseIndex = Math.max(0, Math.min(data.phaseBlueprints.length - 1, Number(candidate.activePhaseIndex) || 0));
-    fresh.armyView = candidate.armyView === "game" ? "game" : "builder";
+    fresh.armyView = candidate.armyView === "game" || candidate.armyView === "solo" ? candidate.armyView : "builder";
+    fresh.soloArmyId = candidate.soloArmyId === "red" ? "red" : "blue";
     fresh.globalNotes = String(candidate.globalNotes || "");
 
     ["blue", "red"].forEach((armyId) => {
@@ -1092,30 +1093,38 @@
   }
 
   function renderArmies() {
-    const isBuilderView = state.armyView !== "game";
+    const isGameView = state.armyView === "game";
+    const isSoloView = state.armyView === "solo";
+    const isEditableView = !isGameView;
     const libraryPanel = document.getElementById("army-library-panel");
     const sessionPanel = document.getElementById("army-session-panel");
+    const soloArmySwitch = document.getElementById("solo-army-switch");
     const workspaceKicker = document.getElementById("army-workspace-kicker");
     const workspaceTitle = document.getElementById("army-workspace-title");
 
     if (libraryPanel) {
-      libraryPanel.hidden = !isBuilderView;
-      if (!isBuilderView) {
+      libraryPanel.hidden = isGameView;
+      if (isGameView) {
         libraryPanel.removeAttribute("open");
       }
     }
     if (sessionPanel) {
       sessionPanel.hidden = false;
     }
+    if (soloArmySwitch) {
+      soloArmySwitch.hidden = !isSoloView;
+    }
 
     if (workspaceKicker) {
-      workspaceKicker.textContent = isBuilderView ? "Конструктор армии" : "Игровой стол";
+      workspaceKicker.textContent = isGameView
+        ? "Игровой стол"
+        : (isSoloView ? "Индивидуальная армия" : "Конструктор армии");
     }
 
     if (workspaceTitle) {
-      workspaceTitle.textContent = isBuilderView
-        ? "Армии, баталии и характеристики отрядов"
-        : "Игровые статусы, потери и состояние баталий";
+      workspaceTitle.textContent = isGameView
+        ? "Игровые статусы, потери и состояние баталий"
+        : (isSoloView ? "Одна армия, её баталии и характеристики отрядов" : "Армии, баталии и характеристики отрядов");
     }
 
     document.querySelectorAll(".armies-mode-button").forEach((button) => {
@@ -1124,17 +1133,27 @@
       button.setAttribute("aria-pressed", isActive ? "true" : "false");
     });
 
+    document.querySelectorAll(".solo-army-button").forEach((button) => {
+      const isActive = button.dataset.armyId === state.soloArmyId;
+      button.classList.toggle("is-active", isActive);
+      button.setAttribute("aria-pressed", isActive ? "true" : "false");
+    });
+
     if (refs.armyDemoGrid) {
-      refs.armyDemoGrid.innerHTML = isBuilderView ? armyPresets.map(renderArmyPresetCard).join("") : "";
+      refs.armyDemoGrid.innerHTML = isGameView ? "" : armyPresets.map(renderArmyPresetCard).join("");
     }
 
-    refs.armiesGrid.innerHTML = ["blue", "red"]
-      .map((armyId) => renderArmyShell(armyId, isBuilderView))
+    const armyIds = isSoloView ? [state.soloArmyId] : ["blue", "red"];
+    refs.armiesGrid.classList.toggle("is-solo-view", isSoloView);
+    refs.armiesGrid.innerHTML = armyIds
+      .map((armyId) => renderArmyShell(armyId, isEditableView))
       .join("");
   }
 
   function renderArmyPresetCard(preset) {
     const points = getArmyPoints(createPresetArmy(preset.army));
+    const isSoloView = state.armyView === "solo";
+    const targetArmyId = isSoloView ? state.soloArmyId : null;
     return `
       <article class="demo-card army-preset-card">
         <div>
@@ -1147,15 +1166,20 @@
         </div>
         <div class="preset-meta">
           <span class="meta-chip">${escapeHtml(formatPointsValue(points))}</span>
-          <span class="meta-chip">${escapeHtml(formatPointsHint(points))}</span>
         </div>
         <div class="preset-actions">
-          <button class="button ghost" type="button" data-action="load-army-preset" data-preset-id="${escapeAttribute(preset.id)}" data-army-id="blue">
-            В синюю армию
-          </button>
-          <button class="button primary" type="button" data-action="load-army-preset" data-preset-id="${escapeAttribute(preset.id)}" data-army-id="red">
-            В красную армию
-          </button>
+          ${isSoloView ? `
+            <button class="button ${targetArmyId === "red" ? "primary" : "ghost"}" type="button" data-action="load-army-preset" data-preset-id="${escapeAttribute(preset.id)}" data-army-id="${targetArmyId}">
+              Загрузить в выбранную армию
+            </button>
+          ` : `
+            <button class="button ghost" type="button" data-action="load-army-preset" data-preset-id="${escapeAttribute(preset.id)}" data-army-id="blue">
+              В синюю армию
+            </button>
+            <button class="button primary" type="button" data-action="load-army-preset" data-preset-id="${escapeAttribute(preset.id)}" data-army-id="red">
+              В красную армию
+            </button>
+          `}
         </div>
       </article>
     `;
@@ -1200,7 +1224,6 @@
           <div class="metric-box is-points">
             <span>Стоимость армии</span>
             <strong>${escapeHtml(formatPointsValue(metrics.points))}</strong>
-            <small>${escapeHtml(formatPointsHint(metrics.points))}</small>
           </div>
           <div class="metric-box">
             <span>Баталии</span>
@@ -1347,7 +1370,6 @@
           `}
         </div>
 
-        <p class="footnote points-footnote">${escapeHtml(formatPointsHint(metrics.points))}</p>
         ${battalia.notes ? `<p class="reference-text">${escapeHtml(battalia.notes)}</p>` : ""}
 
         <div class="unit-list">
@@ -1415,8 +1437,6 @@
           ${renderStat("Стоимость", formatPointsValue(points))}
         </div>
 
-        <p class="footnote unit-points-note">${escapeHtml(formatPointsHint(points))}</p>
-
         ${isBuilderView ? "" : `
           <div class="unit-control-row">
             <div class="counter">
@@ -1467,7 +1487,15 @@
 
     const action = trigger.dataset.action;
     if (action === "set-army-view") {
-      state.armyView = trigger.dataset.armyView === "game" ? "game" : "builder";
+      const nextView = trigger.dataset.armyView;
+      state.armyView = nextView === "game" || nextView === "solo" ? nextView : "builder";
+      renderArmies();
+      saveState();
+      return;
+    }
+
+    if (action === "set-solo-army") {
+      state.soloArmyId = trigger.dataset.armyId === "red" ? "red" : "blue";
       renderArmies();
       saveState();
       return;
@@ -2104,30 +2132,12 @@
 
   function formatPointsValue(result) {
     if (result.scenario && !result.value) {
-      return "Сценарный";
+      return "Без оценки";
     }
     if (!Number.isFinite(Number(result.value))) {
       return "Н/д";
     }
     return `${Math.round(Number(result.value) || 0)} pts`;
-  }
-
-  function formatPointsHint(result) {
-    if (result.official) {
-      return "Официально по рульбуку";
-    }
-
-    const parts = [];
-    if (result.estimated) {
-      parts.push("есть расчётные профили");
-    }
-    if (result.scenario) {
-      parts.push("сценарные юниты не оценены");
-    }
-    if (result.incomplete) {
-      parts.push("часть правил не учтена");
-    }
-    return parts.join(" · ") || "Сводная стоимость по системе очков";
   }
 
   function getArmyMetrics(army) {
