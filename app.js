@@ -56,9 +56,19 @@
 
     document.getElementById("prev-phase").addEventListener("click", () => stepPhase(-1));
     document.getElementById("next-phase").addEventListener("click", () => stepPhase(1));
-    document.getElementById("reset-state").addEventListener("click", resetState);
-    document.getElementById("export-state").addEventListener("click", exportState);
-    document.getElementById("import-state").addEventListener("click", () => refs.importFileInput.click());
+    document.getElementById("reset-state").addEventListener("click", () => {
+      if (resetState()) {
+        closeUtilityMenu("army-session-panel");
+      }
+    });
+    document.getElementById("export-state").addEventListener("click", () => {
+      exportState();
+      closeUtilityMenu("army-session-panel");
+    });
+    document.getElementById("import-state").addEventListener("click", () => {
+      closeUtilityMenu("army-session-panel");
+      refs.importFileInput.click();
+    });
 
     refs.importFileInput.addEventListener("change", handleImportFile);
 
@@ -570,16 +580,17 @@
     const demoPresets = getDemoPresets();
     const preset = demoPresets.find((item) => item.id === presetId);
     if (!preset) {
-      return;
+      return false;
     }
 
     if (hasBattleContent() && !window.confirm(`Заменить текущие армии на демо-состав «${preset.name}»?`)) {
-      return;
+      return false;
     }
 
     state = preset.buildState();
     renderAll();
     setActiveTab("armies");
+    return true;
   }
 
   function hasBattleContent() {
@@ -892,12 +903,12 @@
   function loadArmyPreset(presetId, armyId) {
     const preset = armyPresets.find((item) => item.id === presetId);
     if (!preset) {
-      return;
+      return false;
     }
 
     const targetArmy = state.armies[armyId];
     if (targetArmy.battalias.length && !window.confirm(`Заменить текущий состав армии «${targetArmy.name}» на «${preset.name}»?`)) {
-      return;
+      return false;
     }
 
     const nextArmy = createPresetArmy(preset.army);
@@ -906,6 +917,20 @@
     state.armies[armyId].battalias = nextArmy.battalias;
     renderAll();
     setActiveTab("armies");
+    return true;
+  }
+
+  function closeUtilityMenu(target) {
+    const menu = typeof target === "string"
+      ? document.getElementById(target)
+      : target;
+    if (menu instanceof HTMLDetailsElement) {
+      menu.removeAttribute("open");
+    }
+  }
+
+  function closeClosestUtilityMenu(trigger) {
+    closeUtilityMenu(trigger?.closest(".utility-menu-inline"));
   }
 
   function loadState() {
@@ -1502,12 +1527,16 @@
     }
 
     if (action === "load-army-preset") {
-      loadArmyPreset(trigger.dataset.presetId, trigger.dataset.armyId);
+      if (loadArmyPreset(trigger.dataset.presetId, trigger.dataset.armyId)) {
+        closeClosestUtilityMenu(trigger);
+      }
       return;
     }
 
     if (action === "load-demo-preset") {
-      loadDemoPreset(trigger.dataset.presetId);
+      if (loadDemoPreset(trigger.dataset.presetId)) {
+        closeClosestUtilityMenu(trigger);
+      }
       return;
     }
 
@@ -1831,11 +1860,12 @@
 
   function resetState() {
     if (!window.confirm("Сбросить приложение и очистить текущее состояние партии?")) {
-      return;
+      return false;
     }
 
     state = createDefaultState();
     renderAll();
+    return true;
   }
   function getCurrentPhase() {
     return data.phaseBlueprints[state.activePhaseIndex];
