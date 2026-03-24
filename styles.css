@@ -366,7 +366,8 @@ select {
 .content-stack {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 22px;
+  margin-top: 22px;
 }
 
 .tab-panel {
@@ -1941,7 +1942,7 @@ select {
 
 .armies-layout {
   grid-template-columns: 1fr;
-  gap: 16px;
+  gap: 20px;
 }
 
 .armies-toolbar {
@@ -1950,45 +1951,56 @@ select {
   grid-template-areas:
     "modes menu"
     "solo menu";
-  gap: 12px 18px;
+  gap: 14px 18px;
   align-items: start;
+  padding: 18px 20px;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(84, 39, 20, 0.12);
+  background: linear-gradient(160deg, rgba(255, 252, 247, 0.96), rgba(239, 229, 207, 0.92));
+  box-shadow: 0 14px 28px rgba(84, 39, 20, 0.08);
 }
 
 .armies-menu-row {
   grid-area: menu;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 10px;
-  flex-wrap: wrap;
+  gap: 8px;
+  flex-wrap: nowrap;
+  justify-self: end;
+  padding: 6px;
+  border-radius: 999px;
+  border: 1px solid rgba(84, 39, 20, 0.12);
+  background: rgba(255, 250, 243, 0.72);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
 }
 
 .armies-mode-switch {
   grid-area: modes;
-  display: inline-flex;
-  flex-wrap: nowrap;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
   padding: 6px;
   border-radius: 999px;
-  border: 1px solid rgba(84, 39, 20, 0.14);
-  background: rgba(255, 250, 243, 0.8);
-  box-shadow: 0 10px 24px rgba(84, 39, 20, 0.08);
-  width: max-content;
-  min-width: max-content;
+  border: 1px solid rgba(84, 39, 20, 0.12);
+  background: rgba(255, 250, 243, 0.72);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  width: min(100%, 560px);
+  min-width: 0;
   justify-self: start;
 }
 
 .armies-mode-button {
   min-height: 42px;
-  min-width: 162px;
+  min-width: 0;
   padding: 10px 18px;
-  border: 1px solid rgba(84, 39, 20, 0.14);
+  border: 1px solid transparent;
   border-radius: 999px;
   background: transparent;
   color: var(--ink-soft);
   font: 700 0.9rem/1 var(--ui-font);
   cursor: pointer;
-  white-space: nowrap;
+  white-space: normal;
   transition:
     transform var(--transition),
     background var(--transition),
@@ -1999,6 +2011,7 @@ select {
 
 .armies-mode-button:hover {
   transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.68);
 }
 
 .armies-mode-button.is-active {
@@ -2010,25 +2023,28 @@ select {
 
 .solo-army-switch {
   grid-area: solo;
-  display: inline-grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
   gap: 10px;
-  padding: 14px;
-  border-radius: 24px;
+  padding: 8px;
+  border-radius: 999px;
   border: 1px solid rgba(84, 39, 20, 0.12);
-  background: linear-gradient(160deg, rgba(255, 252, 247, 0.92), rgba(241, 232, 214, 0.9));
-  box-shadow: 0 10px 24px rgba(84, 39, 20, 0.08);
+  background: rgba(255, 250, 243, 0.72);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
   justify-self: start;
-  width: min(440px, 100%);
+  width: fit-content;
+  max-width: 100%;
 }
 
 .solo-army-switch::before {
   content: "Выбор стороны";
-  grid-column: 1 / -1;
   color: var(--ink-soft);
   font: 700 0.74rem/1 var(--ui-font);
   letter-spacing: 0.12em;
   text-transform: uppercase;
+  margin-left: 6px;
+  margin-right: 4px;
 }
 
 .solo-army-switch[hidden] {
@@ -2041,7 +2057,8 @@ select {
   justify-content: center;
   gap: 10px;
   min-height: 42px;
-  padding: 12px 18px;
+  min-width: 180px;
+  padding: 12px 20px;
   border: 1px solid rgba(84, 39, 20, 0.14);
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.72);
@@ -2117,9 +2134,9 @@ select {
   min-height: 42px;
   padding: 10px 18px;
   border-radius: 999px;
-  border: 1px solid rgba(84, 39, 20, 0.18);
-  background: rgba(255, 250, 243, 0.88);
-  color: var(--ink);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--ink-soft);
   font: 700 0.88rem/1 var(--ui-font);
   cursor: pointer;
   list-style: none;
@@ -2136,13 +2153,15 @@ select {
 
 .utility-menu-inline > summary:hover {
   transform: translateY(-1px);
-  box-shadow: 0 8px 18px rgba(84, 39, 20, 0.12);
+  background: rgba(255, 255, 255, 0.68);
+  box-shadow: none;
 }
 
 .utility-menu-inline[open] > summary {
-  background: linear-gradient(135deg, rgba(35, 73, 61, 0.94), rgba(49, 92, 116, 0.94));
-  color: #f8f2e7;
-  border-color: rgba(35, 73, 61, 0.42);
+  background: linear-gradient(135deg, rgba(122, 59, 31, 0.95), rgba(84, 39, 20, 0.98));
+  color: #fff8f0;
+  border-color: rgba(84, 39, 20, 0.48);
+  box-shadow: 0 8px 18px rgba(84, 39, 20, 0.18);
 }
 
 .utility-menu-body {
@@ -2252,7 +2271,7 @@ select {
 }
 
 .armies-grid.is-solo-view .army-shell {
-  max-width: 1180px;
+  max-width: 1240px;
   justify-self: center;
   width: 100%;
 }
@@ -2342,6 +2361,8 @@ select {
 
   .armies-menu-row {
     justify-content: flex-start;
+    justify-self: start;
+    flex-wrap: wrap;
   }
 
   .phase-strip {
@@ -2408,12 +2429,33 @@ select {
     min-width: 0;
   }
 
+  .solo-army-switch {
+    border-radius: 24px;
+  }
+
+  .solo-army-switch::before {
+    flex-basis: 100%;
+    margin: 4px 4px 0;
+  }
+
+  .solo-army-button {
+    flex: 1 1 160px;
+    min-width: 0;
+  }
+
   .utility-menu-inline {
     width: 100%;
   }
 
   .utility-menu-inline > summary {
     width: 100%;
+  }
+
+  .armies-menu-row {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
   }
 
   .status-grid-session,
