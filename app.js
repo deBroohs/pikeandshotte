@@ -55,6 +55,13 @@
       button.addEventListener("click", () => setActiveTab(button.dataset.tabTarget));
     });
 
+    document.querySelectorAll("[data-footer-tab]").forEach((button) => {
+      button.addEventListener("click", () => {
+        setActiveTab(button.dataset.footerTab);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+    });
+
     document.getElementById("prev-phase").addEventListener("click", () => stepPhase(-1));
     document.getElementById("next-phase").addEventListener("click", () => stepPhase(1));
     document.getElementById("reset-state").addEventListener("click", () => {

@@ -32,7 +32,7 @@
   <link rel="manifest" href="./site.webmanifest">
   <link rel="sitemap" type="application/xml" title="Sitemap" href="./sitemap.xml">
   <link rel="preload" href="./assets/arts/hero-battle.jpg" as="image" fetchpriority="high">
-  <link rel="stylesheet" href="./styles.css?v=20260325-14">
+  <link rel="stylesheet" href="./styles.css?v=20260325-16">
   <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -228,6 +228,45 @@
         </div>
       </section>
     </main>
+
+    <footer class="site-footer">
+      <div class="site-footer-grid">
+        <section class="footer-block">
+          <p class="panel-kicker">Field Companion</p>
+          <h2>Pike &amp; Shotte War Room</h2>
+          <p class="footer-copy">Неофициальный companion для партии, армбилдера и справочника по Pike &amp; Shotte. Сайт помогает собирать армии, вести ход игры и быстро сверяться с ключевыми профилями.</p>
+          <div class="chip-row">
+            <span class="meta-chip">1st Edition</span>
+            <span class="meta-chip">Армибилдер</span>
+            <span class="meta-chip">Локальные сохранения</span>
+          </div>
+        </section>
+
+        <section class="footer-block">
+          <p class="panel-kicker">Быстрые переходы</p>
+          <div class="footer-nav">
+            <button class="footer-link" type="button" data-footer-tab="dashboard">Ход партии</button>
+            <button class="footer-link" type="button" data-footer-tab="armies">Армии</button>
+            <button class="footer-link" type="button" data-footer-tab="reference">Правила</button>
+            <button class="footer-link" type="button" data-footer-tab="units">Профили</button>
+          </div>
+        </section>
+
+        <section class="footer-block">
+          <p class="panel-kicker">Проект</p>
+          <ul class="footer-list">
+            <li>Сохранения партии и армий хранятся в браузере на этом устройстве.</li>
+            <li>Опубликовано через GitHub Pages и доступно как статический сайт.</li>
+            <li><a href="https://github.com/deBroohs/pikeandshotte" target="_blank" rel="noreferrer">Открыть репозиторий проекта</a></li>
+          </ul>
+        </section>
+      </div>
+
+      <div class="site-footer-bar">
+        <p>Основано на правилах Pike &amp; Shotte, 1st Edition. Инструмент неофициальный и предназначен для удобства игры.</p>
+        <p>Pike &amp; Shotte и связанные названия используются только как справочная привязка к варгейму Warlord Games.</p>
+      </div>
+    </footer>
   </div>
 
   <dialog id="battalia-dialog" class="editor-dialog">
@@ -375,7 +414,7 @@
 
   <input id="import-file-input" type="file" accept="application/json" hidden>
 
-  <script src="./rules-data.js?v=20260325-14"></script>
-  <script src="./app.js?v=20260325-14"></script>
+  <script src="./rules-data.js?v=20260325-16"></script>
+  <script src="./app.js?v=20260325-16"></script>
 </body>
 </html>

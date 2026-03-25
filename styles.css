@@ -378,6 +378,104 @@ select {
   display: block;
 }
 
+.site-footer {
+  margin-top: 24px;
+  padding: 22px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--line-strong);
+  background:
+    linear-gradient(155deg, rgba(255, 252, 247, 0.95), rgba(238, 229, 208, 0.9)),
+    radial-gradient(circle at top right, rgba(35, 73, 61, 0.1), transparent 30%);
+  box-shadow: var(--shadow);
+  display: grid;
+  gap: 18px;
+}
+
+.site-footer-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 0.9fr 1fr;
+  gap: 18px;
+}
+
+.footer-block {
+  padding: 18px;
+  border-radius: calc(var(--radius-md) + 2px);
+  border: 1px solid rgba(56, 42, 28, 0.12);
+  background: rgba(255, 250, 243, 0.72);
+}
+
+.footer-block h2 {
+  margin: 0 0 10px;
+  font-family: var(--display-font);
+  font-size: clamp(1.4rem, 2vw, 2rem);
+  line-height: 1.05;
+}
+
+.footer-copy {
+  margin: 0 0 14px;
+  color: var(--ink-soft);
+  line-height: 1.6;
+}
+
+.footer-nav {
+  display: grid;
+  gap: 10px;
+}
+
+.footer-link {
+  min-height: 46px;
+  padding: 12px 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(84, 39, 20, 0.16);
+  background: rgba(255, 252, 246, 0.76);
+  color: var(--ink);
+  font: 700 0.9rem/1 var(--ui-font);
+  text-align: left;
+  transition:
+    transform var(--transition),
+    background var(--transition),
+    border-color var(--transition),
+    box-shadow var(--transition);
+}
+
+.footer-link:hover,
+.footer-link:focus-visible {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(84, 39, 20, 0.28);
+  box-shadow: 0 10px 22px rgba(84, 39, 20, 0.08);
+}
+
+.footer-list {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 10px;
+  color: var(--ink-soft);
+  line-height: 1.55;
+}
+
+.footer-list a {
+  color: var(--field);
+  font-weight: 700;
+}
+
+.site-footer-bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px 18px;
+  padding-top: 2px;
+  color: var(--ink-soft);
+  font-size: 0.94rem;
+  line-height: 1.5;
+}
+
+.site-footer-bar p {
+  margin: 0;
+  max-width: 72ch;
+}
+
 .dashboard-grid,
 .armies-layout,
 .units-layout,
@@ -2624,6 +2722,14 @@ select {
   .army-preset-card .preset-actions .button {
     width: 100%;
     min-width: 0;
+  }
+
+  .site-footer-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .site-footer-bar {
+    flex-direction: column;
   }
 
   .utility-menu-inline {
