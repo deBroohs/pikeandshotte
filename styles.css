@@ -2018,6 +2018,10 @@ select {
   margin-top: 16px;
 }
 
+.phase-help-grid-single {
+  grid-template-columns: 1fr;
+}
+
 .phase-help-card {
   display: grid;
   gap: 12px;
@@ -2094,6 +2098,40 @@ select {
 
 .phase-panel-actions .button {
   min-width: 150px;
+}
+
+.army-phase-panel {
+  margin-bottom: 18px;
+}
+
+.phase-runtime-panel {
+  display: grid;
+  gap: 16px;
+  padding: 18px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--line);
+  background:
+    linear-gradient(180deg, rgba(255, 252, 247, 0.88), rgba(244, 233, 214, 0.82)),
+    radial-gradient(circle at top right, rgba(214, 185, 134, 0.22), transparent 42%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.58),
+    0 18px 32px rgba(67, 42, 11, 0.08);
+}
+
+.phase-runtime-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.phase-runtime-header h3 {
+  margin: 4px 0 0;
+  font-size: clamp(1.35rem, 2vw, 1.8rem);
+}
+
+.phase-strip-runtime {
+  margin-bottom: 0;
 }
 
 .phase-title {
@@ -2651,6 +2689,11 @@ select {
     grid-template-columns: 1fr;
   }
 
+  .phase-runtime-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
   .armies-grid {
     grid-template-columns: 1fr;
   }
@@ -2685,6 +2728,10 @@ select {
   .phase-panel-actions .button {
     flex: 1 1 100%;
     min-width: 0;
+  }
+
+  .phase-runtime-panel {
+    padding: 16px;
   }
 
   .armies-toolbar,

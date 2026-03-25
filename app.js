@@ -25,6 +25,7 @@
     phaseStrip: document.getElementById("phase-strip"),
     phaseHelpGrid: document.getElementById("phase-help-grid"),
     phaseCard: document.getElementById("phase-card"),
+    armyPhasePanel: document.getElementById("army-phase-panel"),
     quickTables: document.getElementById("quick-tables"),
     armiesSection: document.getElementById("armies"),
     armyDemoGrid: document.getElementById("army-demo-grid"),
@@ -55,8 +56,6 @@
       button.addEventListener("click", () => setActiveTab(button.dataset.tabTarget));
     });
 
-    document.getElementById("prev-phase").addEventListener("click", () => stepPhase(-1));
-    document.getElementById("next-phase").addEventListener("click", () => stepPhase(1));
     document.getElementById("reset-state").addEventListener("click", () => {
       if (resetState()) {
         closeUtilityMenu("army-session-panel");
@@ -1676,48 +1675,113 @@
   }
 
   function renderPhaseTracker() {
-    const current = getCurrentPhase();
-    refs.phaseStrip.innerHTML = data.phaseBlueprints
-      .map((phase, index) => {
-        const armyName = escapeHtml(state.armies[phase.armyId].name);
-        const activeClass = index === state.activePhaseIndex ? "is-active" : "";
-        const teamClass = phase.armyId === "red" ? "phase-chip-red" : "phase-chip-blue";
-        return `
-          <div class="phase-chip ${teamClass} ${activeClass}">
-            <small>Ход ${state.turn}</small>
-            <strong>${armyName}</strong>
-            <span>${escapeHtml(phase.phaseLabel)}</span>
-          </div>
-        `;
-      })
-      .join("");
+    renderDashboardPhaseReference();
+    renderArmyPhasePanel();
+  }
+
+  function renderDashboardPhaseReference() {
+    const referenceArmyNames = {
+      blue: "Синяя армия",
+      red: "Красная армия"
+    };
+
+    if (refs.phaseStrip) {
+      refs.phaseStrip.innerHTML = renderPhaseStripMarkup({
+        turn: 1,
+        activeIndex: -1,
+        armyNameResolver: (phase) => referenceArmyNames[phase.armyId]
+      });
+    }
 
     if (refs.phaseHelpGrid) {
-      const relevantPhases = data.phaseBlueprints.filter((phase) => phase.armyId === current.armyId);
-      const armyName = state.armies[current.armyId].name;
-
-      refs.phaseHelpGrid.innerHTML = relevantPhases
-        .map((phase) => {
-          const isCurrent = phase.id === current.id;
-          const sideClass = phase.armyId === "red" ? "phase-help-red" : "phase-help-blue";
-          return `
-            <article class="phase-help-card ${sideClass} ${isCurrent ? "is-active" : ""}">
-              <div class="phase-help-header">
-                <div>
-                  <p class="phase-help-side">${escapeHtml(armyName)}</p>
-                  <h3>${escapeHtml(phase.phaseLabel)}</h3>
-                </div>
-                ${isCurrent ? `<span class="phase-help-badge">Текущая</span>` : ""}
-              </div>
-              <p class="phase-help-summary">${escapeHtml(phase.summary)}</p>
-              <ul class="phase-help-list">
-                ${phase.checklist.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}
-              </ul>
-            </article>
-          `;
-        })
+      refs.phaseHelpGrid.innerHTML = data.phaseBlueprints
+        .filter((phase) => phase.armyId === "blue")
+        .map((phase) => renderPhaseHelpCard(phase, referenceArmyNames.blue, { isCurrent: false }))
         .join("");
     }
+  }
+
+  function renderArmyPhasePanel() {
+    if (!refs.armyPhasePanel) {
+      return;
+    }
+
+    const isGameView = state.armyView === "game";
+    refs.armyPhasePanel.hidden = !isGameView;
+
+    if (!isGameView) {
+      refs.armyPhasePanel.innerHTML = "";
+      return;
+    }
+
+    const current = getCurrentPhase();
+    const armyName = state.armies[current.armyId].name;
+
+    refs.armyPhasePanel.innerHTML = `
+      <section class="phase-runtime-panel">
+        <div class="phase-runtime-header">
+          <div>
+            <p class="panel-kicker">Ход партии</p>
+            <h3>Текущий ход и фаза</h3>
+          </div>
+          <div class="panel-actions phase-panel-actions">
+            <button class="button ghost" type="button" data-action="step-phase" data-delta="-1">Назад</button>
+            <button class="button ghost" type="button" data-action="step-phase" data-delta="1">Следующая фаза</button>
+          </div>
+        </div>
+        <div class="phase-strip phase-strip-runtime">
+          ${renderPhaseStripMarkup({
+            turn: state.turn,
+            activeIndex: state.activePhaseIndex,
+            armyNameResolver: (phase) => state.armies[phase.armyId].name
+          })}
+        </div>
+        <div class="phase-help-grid phase-help-grid-single">
+          ${renderPhaseHelpCard(current, armyName, { isCurrent: true })}
+        </div>
+      </section>
+    `;
+  }
+
+  function renderPhaseStripMarkup({ turn, activeIndex, armyNameResolver }) {
+    return data.phaseBlueprints
+      .map((phase, index) => renderPhaseChip(phase, {
+        turn,
+        armyName: armyNameResolver(phase),
+        isActive: index === activeIndex
+      }))
+      .join("");
+  }
+
+  function renderPhaseChip(phase, { turn, armyName, isActive }) {
+    const activeClass = isActive ? "is-active" : "";
+    const teamClass = phase.armyId === "red" ? "phase-chip-red" : "phase-chip-blue";
+    return `
+      <div class="phase-chip ${teamClass} ${activeClass}">
+        <small>Ход ${turn}</small>
+        <strong>${escapeHtml(armyName)}</strong>
+        <span>${escapeHtml(phase.phaseLabel)}</span>
+      </div>
+    `;
+  }
+
+  function renderPhaseHelpCard(phase, armyName, { isCurrent }) {
+    const sideClass = phase.armyId === "red" ? "phase-help-red" : "phase-help-blue";
+    return `
+      <article class="phase-help-card ${sideClass} ${isCurrent ? "is-active" : ""}">
+        <div class="phase-help-header">
+          <div>
+            <p class="phase-help-side">${escapeHtml(armyName)}</p>
+            <h3>${escapeHtml(phase.phaseLabel)}</h3>
+          </div>
+          ${isCurrent ? `<span class="phase-help-badge">Текущая</span>` : ""}
+        </div>
+        <p class="phase-help-summary">${escapeHtml(phase.summary)}</p>
+        <ul class="phase-help-list">
+          ${phase.checklist.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}
+        </ul>
+      </article>
+    `;
   }
 
   function renderQuickTables() {
@@ -1804,6 +1868,8 @@
     if (refs.armyDemoGrid) {
       refs.armyDemoGrid.innerHTML = isGameView ? "" : renderArmyPresetLibrary();
     }
+
+    renderArmyPhasePanel();
 
     const armyIds = isSoloView ? [state.soloArmyId] : ["blue", "red"];
     refs.armiesGrid.classList.toggle("is-solo-view", isSoloView);
@@ -2152,8 +2218,7 @@
     if (action === "set-army-view") {
       const nextView = trigger.dataset.armyView;
       state.armyView = nextView === "game" ? "game" : "solo";
-      renderArmies();
-      saveState();
+      renderAll();
       return;
     }
 
@@ -2171,6 +2236,11 @@
 
     if (action === "load-demo-preset") {
       loadDemoPreset(trigger.dataset.presetId);
+      return;
+    }
+
+    if (action === "step-phase") {
+      stepPhase(Number(trigger.dataset.delta) || 1);
       return;
     }
 

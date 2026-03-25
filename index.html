@@ -32,7 +32,7 @@
   <link rel="manifest" href="./site.webmanifest">
   <link rel="sitemap" type="application/xml" title="Sitemap" href="./sitemap.xml">
   <link rel="preload" href="./assets/arts/hero-battle.jpg" as="image" fetchpriority="high">
-  <link rel="stylesheet" href="./styles.css?v=20260325-21">
+  <link rel="stylesheet" href="./styles.css?v=20260325-27">
   <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -94,10 +94,6 @@
               <div>
                 <p class="panel-kicker">Ход партии</p>
                 <h2>Ход и фазы</h2>
-              </div>
-              <div class="panel-actions phase-panel-actions">
-                <button id="prev-phase" class="button ghost" type="button">Назад</button>
-                <button id="next-phase" class="button ghost" type="button">Следующая фаза</button>
               </div>
             </div>
             <div id="phase-strip" class="phase-strip"></div>
@@ -176,6 +172,7 @@
                 <h2 id="army-workspace-title">Одна армия, её баталии и характеристики отрядов</h2>
               </div>
             </div>
+            <div id="army-phase-panel" class="army-phase-panel" hidden></div>
             <div id="armies-grid" class="armies-grid"></div>
           </article>
         </div>
@@ -397,6 +394,6 @@
   <input id="import-file-input" type="file" accept="application/json" hidden>
 
   <script src="./rules-data.js?v=20260325-20"></script>
-  <script src="./app.js?v=20260325-26"></script>
+  <script src="./app.js?v=20260325-27"></script>
 </body>
 </html>
