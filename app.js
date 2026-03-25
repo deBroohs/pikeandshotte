@@ -66,8 +66,8 @@
       exportState();
       closeUtilityMenu("army-session-panel");
     });
-    document.getElementById("export-army-pdf").addEventListener("click", () => {
-      if (exportArmyPdf()) {
+    document.getElementById("export-army-pdf").addEventListener("click", async () => {
+      if (await exportArmyPdf()) {
         closeUtilityMenu("army-session-panel");
       }
     });
@@ -2472,461 +2472,336 @@
     URL.revokeObjectURL(link.href);
   }
 
-  function exportArmyPdf() {
+  async function exportArmyPdf() {
     if (state.armyView !== "solo") {
-      window.alert("Экспорт PDF доступен в режиме «Армибилдер» для одной выбранной армии.");
+      window.alert("Скачать PDF можно в режиме «Армибилдер» для одной выбранной армии.");
       return false;
     }
 
     const armyId = state.soloArmyId === "red" ? "red" : "blue";
     const army = state.armies[armyId];
     if (!army || !army.battalias.length) {
-      window.alert("Сначала собери хотя бы одну баталию, а затем экспортируй армию в PDF.");
+      window.alert("Сначала собери хотя бы одну баталию, а затем скачай PDF.");
       return false;
     }
 
-    const printWindow = window.open("", "_blank", "width=1400,height=960");
-    if (!printWindow) {
-      window.alert("Браузер заблокировал окно печати. Разреши всплывающие окна для сайта и попробуй ещё раз.");
+    try {
+      const canvas = renderArmyPdfCanvas(armyId, army);
+      const imageBlob = await canvasToBlob(canvas, "image/jpeg", 0.92);
+      const jpegBytes = new Uint8Array(await imageBlob.arrayBuffer());
+      const pdfBytes = buildSinglePagePdfFromJpeg(jpegBytes, canvas.width, canvas.height);
+      const pdfBlob = new Blob([pdfBytes], { type: "application/pdf" });
+      const fileName = `${sanitizeFileName(army.name || "army-sheet") || "army-sheet"}.pdf`;
+      downloadBlob(pdfBlob, fileName);
+      return true;
+    } catch (error) {
+      window.alert("Не удалось сформировать PDF-файл.");
       return false;
     }
-
-    printWindow.document.write(buildArmyPdfDocument(armyId, army));
-    printWindow.document.close();
-    return true;
   }
 
-  function buildArmyPdfDocument(armyId, army) {
+  function renderArmyPdfCanvas(armyId, army) {
+    const width = 2200;
+    const height = 1556;
     const totalUnits = army.battalias.reduce((sum, battalia) => sum + battalia.units.length, 0);
     const battaliaCount = army.battalias.length;
     const points = getArmyPoints(army);
-    const densityClass = getArmyPdfDensityClass(battaliaCount, totalUnits);
-    const gridTemplate = getArmyPdfGridTemplate(battaliaCount, totalUnits);
+    const density = getArmyPdfDensityFactor(battaliaCount, totalUnits);
+    const columns = getArmyPdfGridColumns(battaliaCount, totalUnits);
+    const rows = Math.max(1, Math.ceil(battaliaCount / columns));
+    const margin = 42;
+    const gap = Math.round(18 * density);
+    const headerHeight = Math.round(126 * density);
+    const footerHeight = 40;
+    const contentTop = margin + headerHeight + gap;
+    const contentHeight = height - contentTop - footerHeight - margin;
+    const boxWidth = Math.floor((width - margin * 2 - gap * (columns - 1)) / columns);
+    const boxHeight = Math.floor((contentHeight - gap * (rows - 1)) / rows);
     const palette = armyId === "red"
       ? {
-          start: "#8f3328",
-          end: "#5e1c18",
-          soft: "rgba(159, 58, 44, 0.12)",
-          line: "rgba(120, 36, 30, 0.24)"
+          accent: "#8f3328",
+          accentDeep: "#5e1c18",
+          soft: "#f1d9d3",
+          line: "#bc8177",
+          bgGlow: "rgba(159, 58, 44, 0.16)"
         }
       : {
-          start: "#315c74",
-          end: "#23493d",
-          soft: "rgba(49, 92, 116, 0.12)",
-          line: "rgba(35, 73, 61, 0.24)"
+          accent: "#315c74",
+          accentDeep: "#23493d",
+          soft: "#d7e6eb",
+          line: "#87aab8",
+          bgGlow: "rgba(49, 92, 116, 0.16)"
         };
 
-    return `<!doctype html>
-<html lang="ru">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="color-scheme" content="light">
-  <title>${escapeHtml(army.name)} | PDF</title>
-  <style>
-    @page {
-      size: A4 landscape;
-      margin: 5mm;
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext("2d");
+
+    const bg = ctx.createLinearGradient(0, 0, width, height);
+    bg.addColorStop(0, "#f7f0e2");
+    bg.addColorStop(1, "#eadcc1");
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, width, height);
+
+    const vignette = ctx.createRadialGradient(width * 0.92, height * 0.08, 40, width * 0.92, height * 0.08, width * 0.44);
+    vignette.addColorStop(0, palette.bgGlow);
+    vignette.addColorStop(1, "rgba(255,255,255,0)");
+    ctx.fillStyle = vignette;
+    ctx.fillRect(0, 0, width, height);
+
+    drawRoundedRect(ctx, margin, margin, width - margin * 2, headerHeight, 28);
+    const headerGradient = ctx.createLinearGradient(margin, margin, width - margin, margin + headerHeight);
+    headerGradient.addColorStop(0, "#fffaf2");
+    headerGradient.addColorStop(1, "#f0e4cf");
+    ctx.fillStyle = headerGradient;
+    ctx.fill();
+    ctx.strokeStyle = palette.line;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    ctx.fillStyle = "#2b241e";
+    ctx.font = `${Math.round(58 * density)}px Georgia`;
+    ctx.textBaseline = "alphabetic";
+    ctx.fillText(army.name, margin + 34, margin + Math.round(66 * density));
+
+    const metrics = [
+      formatPointsValue(points),
+      `${battaliaCount} бат.`,
+      `${totalUnits} юн.`
+    ];
+    let metricX = width - margin - 26;
+    const metricY = margin + Math.round(38 * density);
+    metrics.reverse().forEach((value) => {
+      ctx.font = `${Math.round(26 * density)}px Georgia`;
+      const textWidth = ctx.measureText(value).width;
+      const chipWidth = Math.ceil(textWidth + 34);
+      metricX -= chipWidth;
+      drawRoundedRect(ctx, metricX, metricY, chipWidth, Math.round(44 * density), 22);
+      ctx.fillStyle = "rgba(255, 252, 247, 0.92)";
+      ctx.fill();
+      ctx.strokeStyle = palette.line;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.fillStyle = palette.accentDeep;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(value, metricX + chipWidth / 2, metricY + Math.round(22 * density));
+      ctx.textAlign = "left";
+      metricX -= 10;
+    });
+
+    army.battalias.forEach((battalia, index) => {
+      const column = index % columns;
+      const row = Math.floor(index / columns);
+      const x = margin + column * (boxWidth + gap);
+      const y = contentTop + row * (boxHeight + gap);
+      drawArmyPdfBattaliaCanvas(ctx, battalia, x, y, boxWidth, boxHeight, palette, density);
+    });
+
+    const footerY = height - margin - footerHeight;
+    drawRoundedRect(ctx, margin, footerY, width - margin * 2, footerHeight, 18);
+    const footerGradient = ctx.createLinearGradient(margin, footerY, width - margin, footerY);
+    footerGradient.addColorStop(0, "#24201d");
+    footerGradient.addColorStop(1, "#161311");
+    ctx.fillStyle = footerGradient;
+    ctx.fill();
+
+    ctx.fillStyle = "rgba(243, 234, 220, 0.86)";
+    ctx.font = "20px 'Trebuchet MS'";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("Pike & Shotte War Room · debroohs.github.io/pikeandshotte · 1st Edition Companion", width / 2, footerY + footerHeight / 2 + 1);
+    ctx.textAlign = "left";
+
+    return canvas;
+  }
+
+  function drawArmyPdfBattaliaCanvas(ctx, battalia, x, y, width, height, palette, density) {
+    const innerPad = Math.round(20 * density);
+    const headerHeight = Math.round(64 * density);
+    const tableHeaderHeight = Math.round(24 * density);
+    const tableTop = y + innerPad + headerHeight;
+    const tableBottom = y + height - innerPad;
+    const tableHeight = Math.max(40, tableBottom - tableTop);
+    const units = battalia.units || [];
+    const rowHeight = Math.max(Math.round(22 * density), Math.floor((tableHeight - tableHeaderHeight) / Math.max(1, units.length || 1)));
+
+    drawRoundedRect(ctx, x, y, width, height, 24);
+    const cardGradient = ctx.createLinearGradient(x, y, x + width, y + height);
+    cardGradient.addColorStop(0, "#fffbf5");
+    cardGradient.addColorStop(1, "#f4ebdc");
+    ctx.fillStyle = cardGradient;
+    ctx.fill();
+    ctx.strokeStyle = palette.line;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    ctx.fillStyle = palette.accent;
+    ctx.fillRect(x + 10, y + 10, 8, height - 20);
+
+    ctx.fillStyle = "#241e19";
+    ctx.font = `${Math.round(31 * density)}px Georgia`;
+    ctx.textBaseline = "alphabetic";
+    ctx.fillText(truncateTextToWidth(ctx, battalia.name, width - innerPad * 2 - 220), x + innerPad, y + innerPad + Math.round(24 * density));
+
+    ctx.fillStyle = "#6b5c4c";
+    ctx.font = `${Math.round(17 * density)}px 'Trebuchet MS'`;
+    const commanderLine = battalia.commander
+      ? `${formatBattaliaType(battalia.type)} · ${battalia.commander} · CR ${battalia.commandRating}`
+      : `${formatBattaliaType(battalia.type)} · CR ${battalia.commandRating}`;
+    ctx.fillText(truncateTextToWidth(ctx, commanderLine, width - innerPad * 2 - 180), x + innerPad, y + innerPad + Math.round(47 * density));
+
+    const points = formatPointsValue(getBattaliaPoints(battalia));
+    const unitsLabel = `${units.length} юн.`;
+    drawPdfMetaChip(ctx, x + width - innerPad - 112, y + innerPad - 4, 112, Math.round(26 * density), unitsLabel, palette);
+    drawPdfMetaChip(ctx, x + width - innerPad - 112, y + innerPad + Math.round(28 * density), 112, Math.round(26 * density), points, palette);
+
+    drawRoundedRect(ctx, x + innerPad, tableTop, width - innerPad * 2, tableHeight, 16);
+    ctx.fillStyle = "rgba(255,255,255,0.46)";
+    ctx.fill();
+
+    const columns = [
+      { label: "Юнит", ratio: 0.50, align: "left" },
+      { label: "M", ratio: 0.0714, align: "center" },
+      { label: "Sh", ratio: 0.0714, align: "center" },
+      { label: "R", ratio: 0.0714, align: "center" },
+      { label: "Ml", ratio: 0.0714, align: "center" },
+      { label: "Mor", ratio: 0.0714, align: "center" },
+      { label: "St", ratio: 0.0714, align: "center" },
+      { label: "Pts", ratio: 0.0716, align: "center" }
+    ];
+    const tableWidth = width - innerPad * 2;
+    const colXs = [];
+    let runningX = x + innerPad;
+    columns.forEach((column) => {
+      const columnWidth = tableWidth * column.ratio;
+      colXs.push({ x: runningX, width: columnWidth, align: column.align });
+      runningX += columnWidth;
+    });
+
+    ctx.fillStyle = "rgba(94, 72, 48, 0.08)";
+    ctx.fillRect(x + innerPad, tableTop, tableWidth, tableHeaderHeight);
+    ctx.strokeStyle = "rgba(86, 67, 45, 0.12)";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(x + innerPad, tableTop + tableHeaderHeight);
+    ctx.lineTo(x + innerPad + tableWidth, tableTop + tableHeaderHeight);
+    ctx.stroke();
+
+    ctx.fillStyle = "#6b5c4c";
+    ctx.font = `${Math.round(13 * density)}px 'Trebuchet MS'`;
+    ctx.textBaseline = "middle";
+    columns.forEach((column, index) => {
+      const col = colXs[index];
+      if (column.align === "center") {
+        ctx.textAlign = "center";
+        ctx.fillText(column.label, col.x + col.width / 2, tableTop + tableHeaderHeight / 2 + 1);
+      } else {
+        ctx.textAlign = "left";
+        ctx.fillText(column.label, col.x + 8, tableTop + tableHeaderHeight / 2 + 1);
+      }
+    });
+
+    if (!units.length) {
+      ctx.textAlign = "left";
+      ctx.fillStyle = "#7c6e60";
+      ctx.font = `${Math.round(18 * density)}px Georgia`;
+      ctx.fillText("В баталии пока нет юнитов.", x + innerPad + 12, tableTop + tableHeaderHeight + 36);
+      return;
     }
 
-    :root {
-      --paper: #f7f0e2;
-      --ink: #1d1a17;
-      --ink-soft: #564d41;
-      --line: ${palette.line};
-      --accent-start: ${palette.start};
-      --accent-end: ${palette.end};
-      --accent-soft: ${palette.soft};
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    html,
-    body {
-      margin: 0;
-      padding: 0;
-      color: var(--ink);
-      background: var(--paper);
-      font-family: "Palatino Linotype", "Book Antiqua", Georgia, serif;
-      -webkit-print-color-adjust: exact;
-      print-color-adjust: exact;
-    }
-
-    body {
-      overflow: hidden;
-    }
-
-    .pdf-print-frame {
-      width: 287mm;
-      height: 200mm;
-      overflow: hidden;
-    }
-
-    .pdf-sheet {
-      width: 100%;
-      display: grid;
-      gap: 5px;
-      padding: 4mm;
-      transform-origin: top left;
-    }
-
-    .pdf-topline {
-      display: flex;
-      align-items: end;
-      justify-content: space-between;
-      gap: 10px;
-      padding: 3.2mm 3.5mm;
-      border-radius: 4mm;
-      border: 1px solid var(--line);
-      background:
-        linear-gradient(135deg, rgba(255, 251, 244, 0.98), rgba(241, 233, 216, 0.94)),
-        radial-gradient(circle at top right, var(--accent-soft), transparent 35%);
-    }
-
-    h1 {
-      margin: 0;
-      font: 700 17pt/0.98 Georgia, "Times New Roman", serif;
-    }
-
-    .pdf-subtitle {
-      display: none;
-    }
-
-    .pdf-metrics {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: end;
-      gap: 5px;
-    }
-
-    .pdf-metric {
-      padding: 6px 9px;
-      border-radius: 999px;
-      border: 1px solid var(--line);
-      background: rgba(255, 253, 249, 0.86);
-      white-space: nowrap;
-    }
-
-    .pdf-metric strong {
-      font: 700 10pt/1 Georgia, "Times New Roman", serif;
-    }
-
-    .pdf-battalia-grid {
-      display: grid;
-      grid-template-columns: ${gridTemplate};
-      gap: 5px;
-      align-content: start;
-    }
-
-    .pdf-battalia {
-      display: grid;
-      gap: 5px;
-      min-width: 0;
-      padding: 2.8mm;
-      border-radius: 4mm;
-      border: 1px solid var(--line);
-      background:
-        linear-gradient(180deg, rgba(255, 252, 247, 0.98), rgba(249, 242, 229, 0.97)),
-        linear-gradient(150deg, var(--accent-soft), transparent 38%);
-      break-inside: avoid;
-    }
-
-    .pdf-battalia-head {
-      display: flex;
-      justify-content: space-between;
-      gap: 8px;
-      align-items: start;
-    }
-
-    .pdf-battalia h2 {
-      margin: 0;
-      font: 700 10.2pt/1.02 Georgia, "Times New Roman", serif;
-    }
-
-    .pdf-battalia-command {
-      margin: 2px 0 0;
-      color: var(--ink-soft);
-      font-size: 6.8pt;
-      line-height: 1.25;
-    }
-
-    .pdf-battalia-meta {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      justify-items: end;
-    }
-
-    .pdf-battalia-meta span {
-      display: inline-flex;
-      align-items: center;
-      min-height: 20px;
-      padding: 3px 8px;
-      border-radius: 999px;
-      border: 1px solid var(--line);
-      background: rgba(255, 253, 249, 0.86);
-      font: 700 6.7pt/1 "Trebuchet MS", "Gill Sans", sans-serif;
-      white-space: nowrap;
-    }
-
-    .pdf-unit-table {
-      width: 100%;
-      border-collapse: collapse;
-      table-layout: fixed;
-      border-radius: 12px;
-      overflow: hidden;
-      background: rgba(255, 255, 255, 0.5);
-    }
-
-    .pdf-unit-table th,
-    .pdf-unit-table td {
-      padding: 3px 4px;
-      border-bottom: 1px solid rgba(86, 67, 45, 0.12);
-      vertical-align: top;
-      font-size: 6.5pt;
-      line-height: 1.18;
-      text-align: left;
-    }
-
-    .pdf-unit-table th {
-      color: var(--ink-soft);
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      font: 700 6.1pt/1 "Trebuchet MS", "Gill Sans", sans-serif;
-      background: rgba(94, 72, 48, 0.06);
-    }
-
-    .pdf-unit-table tr:last-child td {
-      border-bottom: 0;
-    }
-
-    .pdf-unit-table th:first-child,
-    .pdf-unit-table td:first-child {
-      width: 50%;
-    }
-
-    .pdf-unit-table th:not(:first-child),
-    .pdf-unit-table td:not(:first-child) {
-      width: 7.14%;
-    }
-
-    .pdf-unit-name {
-      display: block;
-      margin-bottom: 1px;
-      font-weight: 700;
-      font-size: 7.1pt;
-    }
-
-    .pdf-unit-meta {
-      display: block;
-      color: var(--ink-soft);
-      font-size: 5.8pt;
-      line-height: 1.14;
-    }
-
-    .pdf-empty {
-      color: var(--ink-soft);
-      font-style: italic;
-    }
-
-    .pdf-sheet.is-compact h1 {
-      font-size: 15.5pt;
-    }
-
-    .pdf-sheet.is-compact .pdf-topline {
-      padding: 2.8mm 3mm;
-    }
-
-    .pdf-sheet.is-compact .pdf-battalia {
-      padding: 2.4mm;
-    }
-
-    .pdf-sheet.is-compact .pdf-unit-table th,
-    .pdf-sheet.is-compact .pdf-unit-table td {
-      padding: 2.5px 3px;
-      font-size: 6pt;
-    }
-
-    .pdf-sheet.is-compact .pdf-unit-name {
-      font-size: 6.6pt;
-    }
-
-    .pdf-sheet.is-compact .pdf-unit-meta {
-      font-size: 5.5pt;
-    }
-
-    .pdf-sheet.is-tight h1 {
-      font-size: 14pt;
-    }
-
-    .pdf-sheet.is-tight .pdf-topline {
-      padding: 2.4mm 2.8mm;
-    }
-
-    .pdf-sheet.is-tight .pdf-battalia {
-      padding: 2mm;
-      gap: 4px;
-    }
-
-    .pdf-sheet.is-tight .pdf-unit-table th,
-    .pdf-sheet.is-tight .pdf-unit-table td {
-      padding: 2px 2.5px;
-      font-size: 5.6pt;
-    }
-
-    .pdf-sheet.is-tight .pdf-unit-name {
-      font-size: 6.1pt;
-    }
-
-    .pdf-sheet.is-tight .pdf-unit-meta {
-      font-size: 5.1pt;
-    }
-  </style>
-</head>
-<body>
-  <div class="pdf-print-frame">
-    <div id="pdf-sheet" class="pdf-sheet ${escapeAttribute(densityClass)}">
-      <header class="pdf-topline">
-        <div>
-          <h1>${escapeHtml(army.name)}</h1>
-        </div>
-        <div class="pdf-metrics">
-          <div class="pdf-metric">
-            <strong>${escapeHtml(formatPointsValue(points))}</strong>
-          </div>
-          <div class="pdf-metric">
-            <strong>${escapeHtml(String(battaliaCount))} бат.</strong>
-          </div>
-          <div class="pdf-metric">
-            <strong>${escapeHtml(String(totalUnits))} юн.</strong>
-          </div>
-        </div>
-      </header>
-
-      <section class="pdf-battalia-grid">
-        ${army.battalias.map((battalia) => renderArmyPdfBattalia(battalia)).join("")}
-      </section>
-    </div>
-  </div>
-
-  <script>
-    function fitSheetToPage() {
-      const frame = document.querySelector(".pdf-print-frame");
-      const sheet = document.getElementById("pdf-sheet");
-      if (!frame || !sheet) {
-        return;
+    units.forEach((unit, index) => {
+      const rowY = tableTop + tableHeaderHeight + index * rowHeight;
+      if (index < units.length - 1) {
+        ctx.beginPath();
+        ctx.moveTo(x + innerPad, rowY + rowHeight);
+        ctx.lineTo(x + innerPad + tableWidth, rowY + rowHeight);
+        ctx.stroke();
       }
 
-      sheet.style.transform = "none";
-      const widthScale = frame.clientWidth / sheet.scrollWidth;
-      const heightScale = frame.clientHeight / sheet.scrollHeight;
-      const scale = Math.min(1, widthScale, heightScale);
-      sheet.style.transform = "scale(" + scale + ")";
-    }
-
-    window.addEventListener("load", () => {
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          fitSheetToPage();
-          setTimeout(() => {
-            window.focus();
-            window.print();
-          }, 140);
-        });
-      });
-      window.addEventListener("afterprint", () => window.close());
+      drawArmyPdfUnitRow(ctx, unit, rowY, rowHeight, colXs, density);
     });
-  </script>
-</body>
-</html>`;
   }
 
-  function getArmyPdfDensityClass(battaliaCount, totalUnits) {
-    if (totalUnits >= 14 || battaliaCount >= 4) {
-      return "is-tight";
-    }
-    if (totalUnits >= 8 || battaliaCount >= 3) {
-      return "is-compact";
-    }
-    return "";
-  }
-
-  function getArmyPdfGridTemplate(battaliaCount, totalUnits) {
-    if (battaliaCount === 1) {
-      return "1fr";
-    }
-    if (battaliaCount >= 5 || totalUnits >= 14) {
-      return "repeat(3, minmax(0, 1fr))";
-    }
-    return "repeat(2, minmax(0, 1fr))";
-  }
-
-  function renderArmyPdfBattalia(battalia) {
-    const points = getBattaliaPoints(battalia);
-    const unitRows = battalia.units.length
-      ? battalia.units.map((unit) => renderArmyPdfUnit(unit)).join("")
-      : `<tr><td class="pdf-empty" colspan="8">В баталии пока нет юнитов.</td></tr>`;
-    const commanderLine = battalia.commander
-      ? `${battalia.commander} · CR ${battalia.commandRating}`
-      : `CR ${battalia.commandRating}`;
-
-    return `
-      <article class="pdf-battalia">
-        <div class="pdf-battalia-head">
-          <div>
-            <h2>${escapeHtml(battalia.name)}</h2>
-            <p class="pdf-battalia-command">${escapeHtml(formatBattaliaType(battalia.type))} · ${escapeHtml(commanderLine)}</p>
-          </div>
-          <div class="pdf-battalia-meta">
-            <span>${escapeHtml(formatPointsValue(points))}</span>
-            <span>${escapeHtml(String(battalia.units.length))} юн.</span>
-          </div>
-        </div>
-
-        <table class="pdf-unit-table">
-          <thead>
-            <tr>
-              <th>Юнит</th>
-              <th>M</th>
-              <th>Sh</th>
-              <th>Rng</th>
-              <th>Ml</th>
-              <th>Mor</th>
-              <th>St</th>
-              <th>Pts</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${unitRows}
-          </tbody>
-        </table>
-      </article>
-    `;
-  }
-
-  function renderArmyPdfUnit(unit) {
-    const detailLine = [
-      `${formatCategory(unit.category)} · ${formatFormation(unit.formation)}`,
-      compactPrintText(unit.armament || "", 42)
+  function drawArmyPdfUnitRow(ctx, unit, rowY, rowHeight, colXs, density) {
+    const nameCell = colXs[0];
+    const detail = [
+      formatCategory(unit.category),
+      formatFormation(unit.formation),
+      compactPrintText(unit.armament || "", 34)
     ].filter(Boolean).join(" · ");
+    const compact = rowHeight < Math.round(30 * density);
 
-    return `
-      <tr>
-        <td>
-          <span class="pdf-unit-name">${escapeHtml(unit.name)}</span>
-          <span class="pdf-unit-meta">${escapeHtml(detailLine)}</span>
-        </td>
-        <td>${escapeHtml(unit.move || "—")}</td>
-        <td>${escapeHtml(unit.shoot || "—")}</td>
-        <td>${escapeHtml(unit.range || "—")}</td>
-        <td>${escapeHtml(unit.melee || "—")}</td>
-        <td>${escapeHtml(unit.morale || "—")}</td>
-        <td>${escapeHtml(String(unit.stamina || "—"))}</td>
-        <td>${escapeHtml(formatPointsValue(getUnitPoints(unit)))}</td>
-      </tr>
-    `;
+    ctx.textAlign = "left";
+    ctx.textBaseline = "alphabetic";
+    ctx.fillStyle = "#251f1a";
+    ctx.font = `${compact ? Math.round(13 * density) : Math.round(15 * density)}px Georgia`;
+
+    if (compact) {
+      const singleLine = truncateTextToWidth(ctx, `${unit.name} — ${detail}`, nameCell.width - 14);
+      ctx.fillText(singleLine, nameCell.x + 8, rowY + rowHeight / 2 + 5);
+    } else {
+      ctx.fillText(truncateTextToWidth(ctx, unit.name, nameCell.width - 14), nameCell.x + 8, rowY + Math.round(17 * density));
+      ctx.fillStyle = "#6b5c4c";
+      ctx.font = `${Math.round(10.5 * density)}px 'Trebuchet MS'`;
+      ctx.fillText(truncateTextToWidth(ctx, detail, nameCell.width - 14), nameCell.x + 8, rowY + Math.max(rowHeight - 8, Math.round(31 * density)));
+    }
+
+    const values = [
+      unit.move || "—",
+      unit.shoot || "—",
+      unit.range || "—",
+      unit.melee || "—",
+      unit.morale || "—",
+      String(unit.stamina || "—"),
+      formatPointsValue(getUnitPoints(unit))
+    ];
+
+    ctx.fillStyle = "#2a231d";
+    ctx.font = `${Math.round(12.5 * density)}px Georgia`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    values.forEach((value, index) => {
+      const col = colXs[index + 1];
+      ctx.fillText(truncateTextToWidth(ctx, value, col.width - 6), col.x + col.width / 2, rowY + rowHeight / 2 + 1);
+    });
+    ctx.textAlign = "left";
+  }
+
+  function drawPdfMetaChip(ctx, x, y, width, height, label, palette) {
+    drawRoundedRect(ctx, x, y, width, height, height / 2);
+    ctx.fillStyle = "rgba(255,252,247,0.9)";
+    ctx.fill();
+    ctx.strokeStyle = palette.line;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.fillStyle = palette.accentDeep;
+    ctx.font = "600 14px 'Trebuchet MS'";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(label, x + width / 2, y + height / 2 + 1);
+    ctx.textAlign = "left";
+  }
+
+  function getArmyPdfDensityFactor(battaliaCount, totalUnits) {
+    if (totalUnits >= 16 || battaliaCount >= 5) {
+      return 0.82;
+    }
+    if (totalUnits >= 10 || battaliaCount >= 3) {
+      return 0.9;
+    }
+    return 1;
+  }
+
+  function getArmyPdfGridColumns(battaliaCount, totalUnits) {
+    if (battaliaCount === 1) {
+      return 1;
+    }
+    if (battaliaCount >= 5 || totalUnits >= 15) {
+      return 3;
+    }
+    return 2;
   }
 
   function compactPrintText(value, maxLength) {
@@ -2938,6 +2813,126 @@
       return clean;
     }
     return `${clean.slice(0, Math.max(0, maxLength - 1)).trimEnd()}…`;
+  }
+
+  function truncateTextToWidth(ctx, text, maxWidth) {
+    const value = String(text || "");
+    if (!value) {
+      return "";
+    }
+    if (ctx.measureText(value).width <= maxWidth) {
+      return value;
+    }
+
+    let low = 0;
+    let high = value.length;
+    while (low < high) {
+      const mid = Math.ceil((low + high) / 2);
+      const sample = `${value.slice(0, mid).trimEnd()}…`;
+      if (ctx.measureText(sample).width <= maxWidth) {
+        low = mid;
+      } else {
+        high = mid - 1;
+      }
+    }
+    return `${value.slice(0, Math.max(1, low)).trimEnd()}…`;
+  }
+
+  function drawRoundedRect(ctx, x, y, width, height, radius) {
+    const r = Math.min(radius, width / 2, height / 2);
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + width, y, x + width, y + height, r);
+    ctx.arcTo(x + width, y + height, x, y + height, r);
+    ctx.arcTo(x, y + height, x, y, r);
+    ctx.arcTo(x, y, x + width, y, r);
+    ctx.closePath();
+  }
+
+  function canvasToBlob(canvas, type, quality) {
+    return new Promise((resolve, reject) => {
+      canvas.toBlob((blob) => {
+        if (blob) {
+          resolve(blob);
+        } else {
+          reject(new Error("Canvas blob generation failed"));
+        }
+      }, type, quality);
+    });
+  }
+
+  function buildSinglePagePdfFromJpeg(jpegBytes, imageWidth, imageHeight) {
+    const pageWidth = 841.89;
+    const pageHeight = 595.28;
+    const encoder = new TextEncoder();
+    const parts = [];
+    const offsets = [0];
+    let cursor = 0;
+
+    const pushPart = (part) => {
+      parts.push(part);
+      cursor += part.length;
+    };
+
+    const pushText = (text) => {
+      pushPart(encoder.encode(text));
+    };
+
+    const pdfHeader = new Uint8Array([37, 80, 68, 70, 45, 49, 46, 52, 10, 37, 255, 255, 255, 255, 10]);
+    pushPart(pdfHeader);
+
+    const addObject = (id, bodyBytes) => {
+      offsets[id] = cursor;
+      pushText(`${id} 0 obj\n`);
+      pushPart(bodyBytes);
+      pushText(`\nendobj\n`);
+    };
+
+    addObject(1, encoder.encode("<< /Type /Catalog /Pages 2 0 R >>"));
+    addObject(2, encoder.encode("<< /Type /Pages /Kids [3 0 R] /Count 1 >>"));
+    addObject(3, encoder.encode(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pageWidth.toFixed(2)} ${pageHeight.toFixed(2)}] /Resources << /XObject << /Im0 4 0 R >> >> /Contents 5 0 R >>`));
+
+    offsets[4] = cursor;
+    pushText(`4 0 obj\n<< /Type /XObject /Subtype /Image /Width ${imageWidth} /Height ${imageHeight} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpegBytes.length} >>\nstream\n`);
+    pushPart(jpegBytes);
+    pushText(`\nendstream\nendobj\n`);
+
+    const content = `q\n${pageWidth.toFixed(2)} 0 0 ${pageHeight.toFixed(2)} 0 0 cm\n/Im0 Do\nQ\n`;
+    addObject(5, encoder.encode(`<< /Length ${encoder.encode(content).length} >>\nstream\n${content}endstream`));
+
+    const xrefOffset = cursor;
+    pushText(`xref\n0 6\n0000000000 65535 f \n`);
+    for (let index = 1; index <= 5; index += 1) {
+      pushText(`${String(offsets[index]).padStart(10, "0")} 00000 n \n`);
+    }
+    pushText(`trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`);
+
+    const output = new Uint8Array(parts.reduce((sum, part) => sum + part.length, 0));
+    let writeOffset = 0;
+    parts.forEach((part) => {
+      output.set(part, writeOffset);
+      writeOffset += part.length;
+    });
+    return output;
+  }
+
+  function downloadBlob(blob, fileName) {
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.href = url;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  function sanitizeFileName(value) {
+    return String(value || "")
+      .replace(/[<>:"/\\|?*\u0000-\u001f]/g, "")
+      .replace(/\s+/g, " ")
+      .trim()
+      .replace(/\s/g, "-");
   }
 
   function handleImportFile(event) {
