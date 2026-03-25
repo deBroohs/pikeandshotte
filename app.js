@@ -605,19 +605,19 @@
         id: "small-scale",
         label: "Малый масштаб",
         pointsLabel: "1000 pts",
-        description: "1-2 баталии: компактные армии для вводной партии, фланговых боёв и быстрых столкновений."
+        description: "3-4 баталии: компактные армии для вводной партии, фланговых боёв и быстрых столкновений."
       },
       {
         id: "medium-scale",
         label: "Средний масштаб",
         pointsLabel: "2000 pts",
-        description: "2-3 баталии: основной формат партии с выраженными стилями боя и пространством для манёвра."
+        description: "6-7 баталий: основной формат партии с выраженными стилями боя и пространством для манёвра."
       },
       {
         id: "large-scale",
         label: "Крупный масштаб",
         pointsLabel: "3000+ pts",
-        description: "Полноценные армии: несколько командующих, широкий фронт и сильная специализация."
+        description: "8-10 баталий: полноценные армии с широким фронтом, резервами и сильной специализацией."
       }
     ];
   }
@@ -693,29 +693,51 @@
           objective: "Держать центр строем, давить один фланг лёгкой конницей и подготавливать атаку огнём.",
           battalias: [
             {
-              name: "Линейный центр",
+              name: "Линейный авангард",
               commander: "Полковник Эшби",
               commandRating: 8,
               type: "foot",
               units: [
-                ...buildUnitSeries("Полк центра", 7, pikeShotUnit),
-                ...buildUnitSeries("Шотта центра", 5, shotUnit),
-                ...buildUnitSeries("Полковое орудие", 2, lightArtilleryUnit)
+                ...buildUnitSeries("Полк авангарда", 4, pikeShotUnit),
+                ...buildUnitSeries("Шотта авангарда", 3, shotUnit),
+                lightArtilleryUnit("Полковое орудие авангарда")
               ]
             },
             {
-              name: "Фланг и резерв",
-              commander: "Кап. Говард",
+              name: "Линейный резерв",
+              commander: "Майор Лайвли",
               commandRating: 7,
+              type: "foot",
+              units: [
+                ...buildUnitSeries("Резервный полк", 4, pikeShotUnit),
+                ...buildUnitSeries("Шотта резерва", 2, shotUnit),
+                mediumArtilleryUnit("Пушка резерва"),
+                lightArtilleryUnit("Лёгкое орудие резерва")
+              ]
+            },
+            {
+              name: "Конный фланг",
+              commander: "Кап. Говард",
+              commandRating: 6,
+              type: "horse",
+              units: [
+                ...buildUnitSeries("Конный эскадрон", 3, cavalryUnit),
+                lightCavalryUnit("Гаркебузиры фланга"),
+                dragoonUnit("Драгуны дозора"),
+                lightArtilleryUnit("Лёгкое орудие фланга")
+              ]
+            },
+            {
+              name: "Смешанный заслон",
+              commander: "Лейт. Мерсер",
+              commandRating: 6,
               type: "mixed",
               units: [
-                ...buildUnitSeries("Резервный полк", 5, pikeShotUnit),
-                shotUnit("Шотта фланга"),
-                ...buildUnitSeries("Конный эскадрон", 5, cavalryUnit),
-                ...buildUnitSeries("Гаркебузиры фланга", 2, lightCavalryUnit),
-                ...buildUnitSeries("Драгуны дозора", 2, dragoonUnit),
-                mediumArtilleryUnit("Пушка резерва"),
-                lightArtilleryUnit("Лёгкое орудие фланга")
+                ...buildUnitSeries("Пехота заслона", 4, pikeShotUnit),
+                shotUnit("Шотта заслона"),
+                ...buildUnitSeries("Конница заслона", 2, cavalryUnit),
+                lightCavalryUnit("Лёгкая конница заслона"),
+                dragoonUnit("Драгуны заслона")
               ]
             }
           ]
@@ -735,20 +757,41 @@
           battalias: [
             {
               name: "Ударное крыло",
-              commander: "Принц Руперт",
-              commandRating: 9,
+              commander: "Полк. Стэнхоуп",
+              commandRating: 8,
               type: "horse",
               units: [
-                ...buildUnitSeries("Кирасиры авангарда", 6, heavyCavalryUnit),
-                ...buildUnitSeries("Пистольеры прорыва", 5, cavalryUnit),
-                ...buildUnitSeries("Конница преследования", 4, lightCavalryUnit),
+                ...buildUnitSeries("Кирасиры авангарда", 3, heavyCavalryUnit),
+                ...buildUnitSeries("Пистольеры прорыва", 2, cavalryUnit),
+                lightCavalryUnit("Конница прикрытия")
+              ]
+            },
+            {
+              name: "Вторая волна",
+              commander: "Принц Руперт",
+              commandRating: 7,
+              type: "horse",
+              units: [
+                ...buildUnitSeries("Кирасиры второй волны", 3, heavyCavalryUnit),
+                ...buildUnitSeries("Конница второй волны", 2, cavalryUnit),
+                lightCavalryUnit("Лёгкая конница второй волны")
+              ]
+            },
+            {
+              name: "Преследование",
+              commander: "Кап. Фицрой",
+              commandRating: 6,
+              type: "horse",
+              units: [
+                cavalryUnit("Конница преследования"),
+                ...buildUnitSeries("Лёгкая конница преследования", 2, lightCavalryUnit),
                 ...buildUnitSeries("Драгуны сопровождения", 2, dragoonUnit)
               ]
             },
             {
-              name: "Якорь и экран",
-              commander: "Кап. Фицрой",
-              commandRating: 7,
+              name: "Пехотный якорь",
+              commander: "Сэр Мортон",
+              commandRating: 6,
               type: "mixed",
               units: [
                 ...buildUnitSeries("Пехотный якорь", 5, pikeShotUnit),
@@ -772,26 +815,49 @@
           objective: "Стоять на позиции, ломать строй артиллерией и вынуждать врага атаковать в неудобный сектор.",
           battalias: [
             {
-              name: "Огневая линия",
+              name: "Левая линия огня",
               commander: "Майор Эллиот",
-              commandRating: 8,
+              commandRating: 7,
               type: "foot",
               units: [
-                ...buildUnitSeries("Шотта линии", 7, shotUnit),
-                ...buildUnitSeries("Пики прикрытия", 7, pikeShotUnit),
-                ...buildUnitSeries("Батарея линии", 2, mediumArtilleryUnit)
+                ...buildUnitSeries("Шотта линии", 4, shotUnit),
+                ...buildUnitSeries("Пики прикрытия", 4, pikeShotUnit),
+                mediumArtilleryUnit("Средняя батарея левой линии")
               ]
             },
             {
-              name: "Батарея позиции",
-              commander: "Мастер Локк",
+              name: "Правая линия огня",
+              commander: "Кап. Вернон",
               commandRating: 7,
+              type: "foot",
+              units: [
+                ...buildUnitSeries("Шотта правой линии", 4, shotUnit),
+                ...buildUnitSeries("Пики правой линии", 4, pikeShotUnit),
+                mediumArtilleryUnit("Средняя батарея правой линии")
+              ]
+            },
+            {
+              name: "Главная батарея",
+              commander: "Мастер Локк",
+              commandRating: 6,
               type: "mixed",
               units: [
-                ...buildUnitSeries("Шотта батареи", 5, shotUnit),
-                ...buildUnitSeries("Пехота батареи", 5, pikeShotUnit),
-                ...buildUnitSeries("Средняя батарея", 3, mediumArtilleryUnit),
-                ...buildUnitSeries("Полковое орудие", 3, lightArtilleryUnit),
+                ...buildUnitSeries("Шотта батареи", 2, shotUnit),
+                ...buildUnitSeries("Пехота батареи", 2, pikeShotUnit),
+                ...buildUnitSeries("Средняя батарея", 2, mediumArtilleryUnit),
+                ...buildUnitSeries("Полковое орудие", 2, lightArtilleryUnit)
+              ]
+            },
+            {
+              name: "Резерв прикрытия",
+              commander: "Кап. Роудс",
+              commandRating: 6,
+              type: "mixed",
+              units: [
+                ...buildUnitSeries("Шотта резерва", 2, shotUnit),
+                ...buildUnitSeries("Пехота резерва", 2, pikeShotUnit),
+                mediumArtilleryUnit("Среднее орудие резерва"),
+                lightArtilleryUnit("Лёгкое орудие резерва"),
                 ...buildUnitSeries("Драгуны прикрытия", 3, dragoonUnit)
               ]
             }
@@ -811,37 +877,76 @@
           objective: "Выигрывать бой центром, а не скоростью: давить строем, терпеть входящий огонь и дожимать конницей.",
           battalias: [
             {
-              name: "Передняя терция",
+              name: "Первая терция",
               commander: "Граф Тилли",
               commandRating: 8,
               type: "foot",
               units: [
-                ...buildUnitSeries("Терция первой линии", 12, pikeBlockUnit),
-                ...buildUnitSeries("Шотта первой линии", 7, shotUnit),
-                mediumArtilleryUnit("Полевое орудие авангарда")
+                ...buildUnitSeries("Пики первой терции", 5, pikeBlockUnit),
+                ...buildUnitSeries("Шотта первой терции", 3, shotUnit)
               ]
             },
             {
-              name: "Резерв центра",
+              name: "Вторая терция",
               commander: "Дон Саласар",
               commandRating: 7,
-              type: "mixed",
+              type: "foot",
               units: [
-                ...buildUnitSeries("Терция резерва", 12, pikeBlockUnit),
-                ...buildUnitSeries("Шотта резерва", 9, shotUnit),
-                ...buildUnitSeries("Орудие резерва", 2, mediumArtilleryUnit)
+                ...buildUnitSeries("Пики второй терции", 5, pikeBlockUnit),
+                ...buildUnitSeries("Шотта второй терции", 3, shotUnit)
               ]
             },
             {
-              name: "Конное завершение",
+              name: "Третья терция",
+              commander: "Герцог Медина",
+              commandRating: 7,
+              type: "foot",
+              units: [
+                ...buildUnitSeries("Пики третьей терции", 5, pikeBlockUnit),
+                ...buildUnitSeries("Шотта третьей терции", 3, shotUnit)
+              ]
+            },
+            {
+              name: "Четвёртая терция",
+              commander: "Кап. Вальдес",
+              commandRating: 6,
+              type: "foot",
+              units: [
+                ...buildUnitSeries("Пики четвёртой терции", 5, pikeBlockUnit),
+                ...buildUnitSeries("Шотта четвёртой терции", 3, shotUnit)
+              ]
+            },
+            {
+              name: "Артиллерийский резерв",
+              commander: "Мастер Санчо",
+              commandRating: 6,
+              type: "mixed",
+              units: [
+                ...buildUnitSeries("Пики артиллерийского резерва", 4, pikeBlockUnit),
+                ...buildUnitSeries("Шотта артиллерийского резерва", 4, shotUnit),
+                ...buildUnitSeries("Орудие резерва", 3, mediumArtilleryUnit)
+              ]
+            },
+            {
+              name: "Левое конное крыло",
               commander: "Маршал Кордова",
-              commandRating: 8,
+              commandRating: 6,
               type: "horse",
               units: [
-                ...buildUnitSeries("Конница крыла", 7, cavalryUnit),
-                ...buildUnitSeries("Кирасиры завершения", 4, heavyCavalryUnit),
-                ...buildUnitSeries("Копейщики преследования", 2, lancerUnit),
-                lightCavalryUnit("Лёгкая конница разведки")
+                ...buildUnitSeries("Конница левого крыла", 4, cavalryUnit),
+                ...buildUnitSeries("Кирасиры левого крыла", 2, heavyCavalryUnit),
+                lancerUnit("Копейщики левого крыла")
+              ]
+            },
+            {
+              name: "Правое конное крыло",
+              commander: "Дон Мендоса",
+              commandRating: 6,
+              type: "horse",
+              units: [
+                ...buildUnitSeries("Конница правого крыла", 3, cavalryUnit),
+                ...buildUnitSeries("Кирасиры правого крыла", 2, heavyCavalryUnit),
+                lancerUnit("Копейщики правого крыла")
               ]
             }
           ]
@@ -860,38 +965,73 @@
           objective: "Продвигать линию быстрее противника, выигрывая бой сочетанием темпа, огня и короткой атаки.",
           battalias: [
             {
-              name: "Первая линия",
+              name: "Левая бригада первой линии",
               commander: "Густав Горн",
-              commandRating: 8,
+              commandRating: 7,
               type: "foot",
               units: [
-                ...buildUnitSeries("Полк первой линии", 14, pikeShotUnit),
-                ...buildUnitSeries("Шотта первой линии", 7, shotUnit),
-                ...buildUnitSeries("Полковое орудие", 3, lightArtilleryUnit)
+                ...buildUnitSeries("Полк левой бригады", 6, pikeShotUnit),
+                ...buildUnitSeries("Шотта левой бригады", 3, shotUnit),
+                lightArtilleryUnit("Полковое орудие левой бригады")
+              ]
+            },
+            {
+              name: "Правая бригада первой линии",
+              commander: "Банер",
+              commandRating: 7,
+              type: "foot",
+              units: [
+                ...buildUnitSeries("Полк правой бригады", 6, pikeShotUnit),
+                ...buildUnitSeries("Шотта правой бригады", 3, shotUnit),
+                lightArtilleryUnit("Полковое орудие правой бригады")
               ]
             },
             {
               name: "Орудия и поддержка",
-              commander: "Банер",
-              commandRating: 7,
+              commander: "Банер-младший",
+              commandRating: 6,
               type: "mixed",
               units: [
-                ...buildUnitSeries("Полк поддержки", 8, pikeShotUnit),
-                ...buildUnitSeries("Шотта поддержки", 6, shotUnit),
-                ...buildUnitSeries("Лёгкое орудие", 3, lightArtilleryUnit),
-                ...buildUnitSeries("Драгуны позиции", 2, dragoonUnit)
+                ...buildUnitSeries("Полк поддержки", 5, pikeShotUnit),
+                ...buildUnitSeries("Шотта поддержки", 3, shotUnit),
+                ...buildUnitSeries("Лёгкое орудие поддержки", 2, lightArtilleryUnit),
+                dragoonUnit("Драгуны поддержки")
               ]
             },
             {
-              name: "Конный фланг и быстрые орудия",
+              name: "Резервная бригада",
+              commander: "Стенбок",
+              commandRating: 6,
+              type: "mixed",
+              units: [
+                ...buildUnitSeries("Полк резервной бригады", 5, pikeShotUnit),
+                ...buildUnitSeries("Шотта резервной бригады", 4, shotUnit),
+                ...buildUnitSeries("Лёгкое орудие резерва", 2, lightArtilleryUnit),
+                dragoonUnit("Драгуны резерва")
+              ]
+            },
+            {
+              name: "Левое конное крыло",
               commander: "Торстенссон",
-              commandRating: 8,
+              commandRating: 7,
               type: "horse",
               units: [
-                ...buildUnitSeries("Конница фланга", 11, cavalryUnit),
-                ...buildUnitSeries("Лёгкая конница", 5, lightCavalryUnit),
-                ...buildUnitSeries("Драгуны конного крыла", 2, dragoonUnit),
-                ...buildUnitSeries("Конное орудие", 2, lightArtilleryUnit)
+                ...buildUnitSeries("Конница левого крыла", 6, cavalryUnit),
+                ...buildUnitSeries("Лёгкая конница левого крыла", 2, lightCavalryUnit),
+                dragoonUnit("Драгуны левого крыла"),
+                lightArtilleryUnit("Конное орудие левого крыла")
+              ]
+            },
+            {
+              name: "Правое конное крыло",
+              commander: "Врангель",
+              commandRating: 6,
+              type: "horse",
+              units: [
+                ...buildUnitSeries("Конница правого крыла", 5, cavalryUnit),
+                ...buildUnitSeries("Лёгкая конница правого крыла", 3, lightCavalryUnit),
+                dragoonUnit("Драгуны правого крыла"),
+                lightArtilleryUnit("Конное орудие правого крыла")
               ]
             }
           ]
@@ -915,33 +1055,64 @@
               commandRating: 9,
               type: "horse",
               units: [
-                ...buildUnitSeries("Кирасиры авангарда", 8, heavyCavalryUnit),
-                ...buildUnitSeries("Конница первой линии", 5, cavalryUnit),
-                ...buildUnitSeries("Лёгкая конница прикрытия", 2, lightCavalryUnit)
+                ...buildUnitSeries("Кирасиры авангарда", 5, heavyCavalryUnit),
+                ...buildUnitSeries("Конница первой линии", 3, cavalryUnit),
+                lightCavalryUnit("Лёгкая конница прикрытия")
               ]
             },
             {
-              name: "Резерв преследования",
+              name: "Первая волна резерва",
               commander: "Лорд Уилмот",
               commandRating: 8,
               type: "horse",
               units: [
-                ...buildUnitSeries("Кирасиры резерва", 7, heavyCavalryUnit),
-                ...buildUnitSeries("Конница преследования", 7, cavalryUnit),
-                ...buildUnitSeries("Лёгкая конница резерва", 2, lightCavalryUnit),
-                ...buildUnitSeries("Драгуны опорной рощи", 3, dragoonUnit)
+                ...buildUnitSeries("Кирасиры резерва", 5, heavyCavalryUnit),
+                ...buildUnitSeries("Конница резерва", 3, cavalryUnit),
+                lightCavalryUnit("Лёгкая конница резерва")
+              ]
+            },
+            {
+              name: "Вторая волна преследования",
+              commander: "Сэр Чарльз Джерард",
+              commandRating: 7,
+              type: "horse",
+              units: [
+                ...buildUnitSeries("Кирасиры второй волны", 5, heavyCavalryUnit),
+                ...buildUnitSeries("Конница преследования", 2, cavalryUnit),
+                lightCavalryUnit("Лёгкая конница преследования"),
+                ...buildUnitSeries("Драгуны опорной рощи", 2, dragoonUnit)
               ]
             },
             {
               name: "Пехотный якорь",
               commander: "Сэр Джейкоб Астли",
-              commandRating: 8,
+              commandRating: 6,
               type: "foot",
               units: [
-                ...buildUnitSeries("Пехота центра", 8, pikeShotUnit),
-                ...buildUnitSeries("Шотта центра", 6, shotUnit),
-                ...buildUnitSeries("Драгуны удержания", 2, dragoonUnit),
+                ...buildUnitSeries("Пехота центра", 4, pikeShotUnit),
+                ...buildUnitSeries("Шотта центра", 3, shotUnit)
+              ]
+            },
+            {
+              name: "Пехотный резерв",
+              commander: "Кап. Лэнгдейл",
+              commandRating: 6,
+              type: "foot",
+              units: [
+                ...buildUnitSeries("Пехота резерва", 4, pikeShotUnit),
+                ...buildUnitSeries("Шотта резерва", 3, shotUnit),
                 lightArtilleryUnit("Лёгкое орудие якоря")
+              ]
+            },
+            {
+              name: "Смешанный заслон",
+              commander: "Лейт. Форстер",
+              commandRating: 6,
+              type: "mixed",
+              units: [
+                ...buildUnitSeries("Конница заслона", 4, cavalryUnit),
+                lightCavalryUnit("Лёгкая конница заслона"),
+                ...buildUnitSeries("Драгуны заслона", 3, dragoonUnit)
               ]
             }
           ]
@@ -960,64 +1131,107 @@
           objective: "Давить сразу несколько осей, не раскрываясь под один решающий вражеский удар.",
           battalias: [
             {
-              name: "Центральная линия",
-              commander: "Генерал армии",
+              name: "Центральная линия I",
+              commander: "Командир центра I",
               commandRating: 8,
               type: "foot",
               units: [
-                ...buildUnitSeries("Полк центральной линии", 12, pikeShotUnit),
-                ...buildUnitSeries("Шотта центральной линии", 8, shotUnit),
-                ...buildUnitSeries("Центральная батарея", 2, mediumArtilleryUnit),
-                lightArtilleryUnit("Полковое орудие центра")
+                ...buildUnitSeries("Полк центральной линии", 5, pikeShotUnit),
+                ...buildUnitSeries("Шотта центральной линии", 3, shotUnit),
+                mediumArtilleryUnit("Центральная батарея I")
               ]
             },
             {
-              name: "Вторая линия",
-              commander: "Командующий центром",
+              name: "Центральная линия II",
+              commander: "Командир центра II",
               commandRating: 8,
               type: "foot",
               units: [
-                ...buildUnitSeries("Полк второй линии", 10, pikeShotUnit),
-                ...buildUnitSeries("Шотта второй линии", 6, shotUnit),
-                mediumArtilleryUnit("Батарея второй линии"),
-                lightArtilleryUnit("Лёгкое орудие второй линии")
+                ...buildUnitSeries("Полк второй линии", 5, pikeShotUnit),
+                ...buildUnitSeries("Шотта второй линии", 3, shotUnit),
+                mediumArtilleryUnit("Центральная батарея II")
               ]
             },
             {
-              name: "Поддержка и резерв",
-              commander: "Командующий резервом",
-              commandRating: 8,
+              name: "Передовой резерв",
+              commander: "Командир резерва I",
+              commandRating: 7,
               type: "mixed",
               units: [
-                ...buildUnitSeries("Резервный полк", 8, pikeShotUnit),
-                ...buildUnitSeries("Шотта резерва", 5, shotUnit),
-                ...buildUnitSeries("Драгуны резерва", 2, dragoonUnit),
-                ...buildUnitSeries("Полковое орудие резерва", 2, lightArtilleryUnit),
-                mediumArtilleryUnit("Тяжёлое орудие резерва")
+                ...buildUnitSeries("Резервный полк", 5, pikeShotUnit),
+                ...buildUnitSeries("Шотта резерва", 3, shotUnit),
+                lightArtilleryUnit("Полковое орудие резерва I")
+              ]
+            },
+            {
+              name: "Главный резерв",
+              commander: "Командир резерва II",
+              commandRating: 7,
+              type: "mixed",
+              units: [
+                ...buildUnitSeries("Полк главного резерва", 5, pikeShotUnit),
+                ...buildUnitSeries("Шотта главного резерва", 3, shotUnit),
+                mediumArtilleryUnit("Тяжёлое орудие резерва"),
+                lightArtilleryUnit("Полковое орудие резерва II")
+              ]
+            },
+            {
+              name: "Смешанный заслон",
+              commander: "Кап. Кларк",
+              commandRating: 6,
+              type: "mixed",
+              units: [
+                ...buildUnitSeries("Пехота заслона", 5, pikeShotUnit),
+                ...buildUnitSeries("Шотта заслона", 4, shotUnit),
+                dragoonUnit("Драгуны заслона"),
+                lightArtilleryUnit("Лёгкое орудие заслона")
+              ]
+            },
+            {
+              name: "Тыловой резерв",
+              commander: "Майор Роули",
+              commandRating: 6,
+              type: "mixed",
+              units: [
+                ...buildUnitSeries("Пехота тылового резерва", 5, pikeShotUnit),
+                ...buildUnitSeries("Шотта тылового резерва", 3, shotUnit),
+                ...buildUnitSeries("Драгуны тылового резерва", 2, dragoonUnit),
+                mediumArtilleryUnit("Орудие тылового резерва"),
+                lightArtilleryUnit("Полковое орудие тыла")
               ]
             },
             {
               name: "Левое конное крыло",
-              commander: "Командующий конницей",
-              commandRating: 8,
+              commander: "Командующий левым крылом",
+              commandRating: 7,
               type: "horse",
               units: [
-                ...buildUnitSeries("Конница левого крыла", 7, cavalryUnit),
-                ...buildUnitSeries("Кирасиры левого крыла", 5, heavyCavalryUnit),
-                ...buildUnitSeries("Лёгкая конница левого крыла", 3, lightCavalryUnit),
-                dragoonUnit("Драгуны левого крыла")
+                ...buildUnitSeries("Конница левого крыла", 5, cavalryUnit),
+                ...buildUnitSeries("Кирасиры левого крыла", 3, heavyCavalryUnit),
+                lightCavalryUnit("Лёгкая конница левого крыла")
               ]
             },
             {
               name: "Правое конное крыло",
               commander: "Командующий правым крылом",
-              commandRating: 8,
+              commandRating: 6,
               type: "horse",
               units: [
-                ...buildUnitSeries("Конница правого крыла", 6, cavalryUnit),
-                ...buildUnitSeries("Кирасиры правого крыла", 4, heavyCavalryUnit),
-                ...buildUnitSeries("Лёгкая конница правого крыла", 2, lightCavalryUnit),
-                dragoonUnit("Драгуны правого крыла")
+                ...buildUnitSeries("Конница правого крыла", 4, cavalryUnit),
+                ...buildUnitSeries("Кирасиры правого крыла", 3, heavyCavalryUnit),
+                ...buildUnitSeries("Лёгкая конница правого крыла", 2, lightCavalryUnit)
+              ]
+            },
+            {
+              name: "Конный резерв",
+              commander: "Командир конного резерва",
+              commandRating: 6,
+              type: "horse",
+              units: [
+                ...buildUnitSeries("Конница конного резерва", 4, cavalryUnit),
+                ...buildUnitSeries("Кирасиры конного резерва", 3, heavyCavalryUnit),
+                ...buildUnitSeries("Лёгкая конница конного резерва", 2, lightCavalryUnit),
+                dragoonUnit("Драгуны конного резерва")
               ]
             }
           ]
@@ -1036,67 +1250,125 @@
           objective: "Ломать строй до контакта, навязывать противнику атаку в невыгодный коридор и отбивать её пиками.",
           battalias: [
             {
-              name: "Левая батарейная линия",
+              name: "Левая батарея I",
               commander: "Мастер северного крыла",
               commandRating: 8,
               type: "mixed",
               units: [
-                ...buildUnitSeries("Шотта левого сектора", 8, shotUnit),
-                ...buildUnitSeries("Пехота прикрытия левого сектора", 7, pikeShotUnit),
-                ...buildUnitSeries("Средняя батарея левого сектора", 3, mediumArtilleryUnit),
-                ...buildUnitSeries("Полковое орудие левого сектора", 2, lightArtilleryUnit),
-                ...buildUnitSeries("Драгуны заставы", 2, dragoonUnit)
+                ...buildUnitSeries("Шотта левого сектора", 4, shotUnit),
+                ...buildUnitSeries("Пехота прикрытия левого сектора", 3, pikeShotUnit),
+                ...buildUnitSeries("Средняя батарея левого сектора", 2, mediumArtilleryUnit),
+                lightArtilleryUnit("Полковое орудие левого сектора")
               ]
             },
             {
-              name: "Центр огня",
-              commander: "Главный артиллерист",
-              commandRating: 8,
-              type: "foot",
-              units: [
-                ...buildUnitSeries("Шотта центра", 8, shotUnit),
-                ...buildUnitSeries("Пехота центра", 8, pikeShotUnit),
-                ...buildUnitSeries("Средняя батарея центра", 5, mediumArtilleryUnit),
-                ...buildUnitSeries("Лёгкая батарея центра", 3, lightArtilleryUnit)
-              ]
-            },
-            {
-              name: "Правая батарейная линия",
-              commander: "Кап. южного фланга",
-              commandRating: 8,
+              name: "Левая батарея II",
+              commander: "Кап. Флетчер",
+              commandRating: 7,
               type: "mixed",
               units: [
-                ...buildUnitSeries("Шотта правого сектора", 8, shotUnit),
-                ...buildUnitSeries("Пехота прикрытия правого сектора", 7, pikeShotUnit),
-                ...buildUnitSeries("Средняя батарея правого сектора", 3, mediumArtilleryUnit),
-                ...buildUnitSeries("Полковое орудие правого сектора", 2, lightArtilleryUnit),
-                ...buildUnitSeries("Драгуны правого фланга", 2, dragoonUnit)
+                ...buildUnitSeries("Шотта второй линии левого сектора", 4, shotUnit),
+                ...buildUnitSeries("Пехота второй линии левого сектора", 4, pikeShotUnit),
+                mediumArtilleryUnit("Среднее орудие левого резерва"),
+                lightArtilleryUnit("Лёгкое орудие левого резерва"),
+                dragoonUnit("Драгуны левого заслона")
+              ]
+            },
+            {
+              name: "Центр огня I",
+              commander: "Главный артиллерист",
+              commandRating: 7,
+              type: "foot",
+              units: [
+                ...buildUnitSeries("Шотта центра", 4, shotUnit),
+                ...buildUnitSeries("Пехота центра", 3, pikeShotUnit),
+                ...buildUnitSeries("Средняя батарея центра", 2, mediumArtilleryUnit),
+                lightArtilleryUnit("Лёгкая батарея центра")
+              ]
+            },
+            {
+              name: "Центр огня II",
+              commander: "Кап. Хейл",
+              commandRating: 7,
+              type: "foot",
+              units: [
+                ...buildUnitSeries("Шотта второй линии центра", 4, shotUnit),
+                ...buildUnitSeries("Пехота второй линии центра", 4, pikeShotUnit),
+                mediumArtilleryUnit("Среднее орудие второго центра"),
+                lightArtilleryUnit("Лёгкая батарея второго центра"),
+                dragoonUnit("Драгуны центрального прикрытия")
+              ]
+            },
+            {
+              name: "Правая батарея I",
+              commander: "Кап. южного фланга",
+              commandRating: 6,
+              type: "mixed",
+              units: [
+                ...buildUnitSeries("Шотта правого сектора", 5, shotUnit),
+                ...buildUnitSeries("Пехота прикрытия правого сектора", 3, pikeShotUnit),
+                ...buildUnitSeries("Средняя батарея правого сектора", 2, mediumArtilleryUnit),
+                lightArtilleryUnit("Полковое орудие правого сектора")
+              ]
+            },
+            {
+              name: "Правая батарея II",
+              commander: "Лейт. Моррис",
+              commandRating: 6,
+              type: "mixed",
+              units: [
+                ...buildUnitSeries("Шотта второй линии правого сектора", 4, shotUnit),
+                ...buildUnitSeries("Пехота второй линии правого сектора", 4, pikeShotUnit),
+                mediumArtilleryUnit("Среднее орудие правого резерва"),
+                lightArtilleryUnit("Лёгкое орудие правого резерва"),
+                dragoonUnit("Драгуны правого заслона")
               ]
             },
             {
               name: "Резервная линия",
               commander: "Командующий резервом",
-              commandRating: 7,
+              commandRating: 6,
               type: "mixed",
               units: [
-                ...buildUnitSeries("Шотта резерва", 7, shotUnit),
-                ...buildUnitSeries("Пехота резерва", 5, pikeShotUnit),
+                ...buildUnitSeries("Шотта резерва", 4, shotUnit),
+                ...buildUnitSeries("Пехота резерва", 4, pikeShotUnit),
                 ...buildUnitSeries("Резервная батарея", 2, mediumArtilleryUnit),
-                ...buildUnitSeries("Драгуны резерва", 2, dragoonUnit),
-                ...buildUnitSeries("Конный резерв", 2, cavalryUnit)
+                lightArtilleryUnit("Лёгкое орудие резерва"),
+                dragoonUnit("Драгуны резерва")
               ]
             },
             {
               name: "Подвижный резерв",
               commander: "Маршал контратаки",
-              commandRating: 7,
+              commandRating: 6,
               type: "mixed",
               units: [
-                ...buildUnitSeries("Пехота мобильного резерва", 5, pikeShotUnit),
                 ...buildUnitSeries("Шотта мобильного резерва", 4, shotUnit),
-                ...buildUnitSeries("Конный резерв преследования", 4, cavalryUnit),
-                ...buildUnitSeries("Лёгкая конница резерва", 2, lightCavalryUnit),
+                ...buildUnitSeries("Пехота мобильного резерва", 4, pikeShotUnit),
+                ...buildUnitSeries("Средняя батарея мобильного резерва", 2, mediumArtilleryUnit),
                 lightArtilleryUnit("Лёгкое орудие мобильного резерва")
+              ]
+            },
+            {
+              name: "Конный резерв I",
+              commander: "Кап. Дрейк",
+              commandRating: 7,
+              type: "horse",
+              units: [
+                ...buildUnitSeries("Конный резерв", 4, cavalryUnit),
+                lightCavalryUnit("Лёгкая конница резерва"),
+                ...buildUnitSeries("Драгуны конного резерва", 2, dragoonUnit)
+              ]
+            },
+            {
+              name: "Конный резерв II",
+              commander: "Лейт. Грей",
+              commandRating: 6,
+              type: "horse",
+              units: [
+                ...buildUnitSeries("Конный резерв преследования", 4, cavalryUnit),
+                lightCavalryUnit("Лёгкая конница преследования"),
+                ...buildUnitSeries("Драгуны подвижного резерва", 2, dragoonUnit)
               ]
             }
           ]
@@ -1120,55 +1392,98 @@
               commandRating: 8,
               type: "foot",
               units: [
-                ...buildUnitSeries("Пехота левого центра", 10, pikeShotUnit),
-                ...buildUnitSeries("Шотта левого центра", 6, shotUnit),
+                ...buildUnitSeries("Пехота левого центра", 6, pikeShotUnit),
+                ...buildUnitSeries("Шотта левого центра", 3, shotUnit),
                 mediumArtilleryUnit("Пушка левой наковальни")
               ]
             },
             {
               name: "Правая наковальня",
               commander: "Сэр Генри Блэйн",
-              commandRating: 8,
+              commandRating: 7,
               type: "foot",
               units: [
-                ...buildUnitSeries("Пехота правого центра", 10, pikeShotUnit),
-                ...buildUnitSeries("Шотта правого центра", 6, shotUnit),
+                ...buildUnitSeries("Пехота правого центра", 6, pikeShotUnit),
+                ...buildUnitSeries("Шотта правого центра", 3, shotUnit),
                 mediumArtilleryUnit("Пушка правой наковальни")
               ]
             },
             {
-              name: "Центральный резерв",
-              commander: "Командующий резервом",
-              commandRating: 8,
+              name: "Левая поддержка",
+              commander: "Кап. Далримпл",
+              commandRating: 7,
               type: "mixed",
               units: [
-                ...buildUnitSeries("Резервный полк", 8, pikeShotUnit),
-                ...buildUnitSeries("Шотта резерва", 5, shotUnit),
-                ...buildUnitSeries("Драгуны поддержки", 2, dragoonUnit),
-                ...buildUnitSeries("Полковое орудие резерва", 2, lightArtilleryUnit)
+                ...buildUnitSeries("Резервный полк левого центра", 6, pikeShotUnit),
+                ...buildUnitSeries("Шотта левого резерва", 4, shotUnit),
+                lightArtilleryUnit("Полковое орудие левого резерва")
               ]
             },
             {
-              name: "Молот крыла",
-              commander: "Принц-кондотьер",
-              commandRating: 9,
-              type: "horse",
+              name: "Правая поддержка",
+              commander: "Командующий резервом",
+              commandRating: 6,
+              type: "mixed",
               units: [
-                ...buildUnitSeries("Кирасиры первой линии", 8, heavyCavalryUnit),
-                ...buildUnitSeries("Конница первой волны", 6, cavalryUnit),
-                ...buildUnitSeries("Лёгкая конница преследования", 2, lightCavalryUnit),
-                ...buildUnitSeries("Драгуны сопровождения", 2, dragoonUnit)
+                ...buildUnitSeries("Резервный полк правого центра", 5, pikeShotUnit),
+                ...buildUnitSeries("Шотта правого резерва", 4, shotUnit),
+                lightArtilleryUnit("Полковое орудие правого резерва"),
+                ...buildUnitSeries("Драгуны поддержки", 2, dragoonUnit)
               ]
             },
             {
-              name: "Второй удар",
-              commander: "Маршал добивания",
+              name: "Тыловой резерв",
+              commander: "Лейт. Грин",
+              commandRating: 6,
+              type: "mixed",
+              units: [
+                ...buildUnitSeries("Пехота тылового резерва", 5, pikeShotUnit),
+                ...buildUnitSeries("Шотта тылового резерва", 3, shotUnit),
+                ...buildUnitSeries("Драгуны тылового резерва", 2, dragoonUnit)
+              ]
+            },
+            {
+              name: "Молот крыла I",
+              commander: "Принц-кондотьер",
               commandRating: 8,
               type: "horse",
               units: [
-                ...buildUnitSeries("Кирасиры второй линии", 7, heavyCavalryUnit),
-                ...buildUnitSeries("Конница второй волны", 5, cavalryUnit),
-                ...buildUnitSeries("Лёгкая конница добивания", 2, lightCavalryUnit)
+                ...buildUnitSeries("Кирасиры первой линии", 4, heavyCavalryUnit),
+                ...buildUnitSeries("Конница первой волны", 3, cavalryUnit),
+                lightCavalryUnit("Лёгкая конница первой волны")
+              ]
+            },
+            {
+              name: "Молот крыла II",
+              commander: "Маршал добивания",
+              commandRating: 7,
+              type: "horse",
+              units: [
+                ...buildUnitSeries("Кирасиры второй линии", 4, heavyCavalryUnit),
+                ...buildUnitSeries("Конница второй волны", 3, cavalryUnit),
+                lightCavalryUnit("Лёгкая конница второй волны")
+              ]
+            },
+            {
+              name: "Молот крыла III",
+              commander: "Лорд Брэкен",
+              commandRating: 8,
+              type: "horse",
+              units: [
+                ...buildUnitSeries("Кирасиры третьей линии", 4, heavyCavalryUnit),
+                ...buildUnitSeries("Конница третьей волны", 3, cavalryUnit),
+                lightCavalryUnit("Лёгкая конница третьей волны")
+              ]
+            },
+            {
+              name: "Конный резерв удара",
+              commander: "Кап. Нортон",
+              commandRating: 7,
+              type: "horse",
+              units: [
+                ...buildUnitSeries("Кирасиры резерва", 3, heavyCavalryUnit),
+                ...buildUnitSeries("Конница добивания", 2, cavalryUnit),
+                lightCavalryUnit("Лёгкая конница добивания")
               ]
             }
           ]
