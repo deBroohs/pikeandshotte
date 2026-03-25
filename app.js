@@ -150,8 +150,8 @@
       morale: template.morale,
       stamina: Number(template.stamina) || 3,
       artKey: template.artKey || "",
-      pointsOverride: Number.isFinite(Number(template.pointsOverride)) ? Number(template.pointsOverride) : null,
-      pointsShootValue: Number.isFinite(Number(template.pointsShootValue)) ? Number(template.pointsShootValue) : null,
+      pointsOverride: getOptionalNumber(template.pointsOverride),
+      pointsShootValue: getOptionalNumber(template.pointsShootValue),
       pointsUnavailable: Boolean(template.pointsUnavailable),
       specialRules: template.specialRules,
       notes: template.notes,
@@ -626,6 +626,10 @@
     return { templateId: "pike-company-infantry", name, ...overrides };
   }
 
+  function pikeBlockUnit(name, overrides = {}) {
+    return { templateId: "pike-block", name, ...overrides };
+  }
+
   function shotUnit(name, overrides = {}) {
     return { templateId: "musketeers", name, ...overrides };
   }
@@ -636,6 +640,10 @@
 
   function heavyCavalryUnit(name, overrides = {}) {
     return { templateId: "cuirassiers", name, ...overrides };
+  }
+
+  function lancerUnit(name, overrides = {}) {
+    return { templateId: "lancers", name, ...overrides };
   }
 
   function lightCavalryUnit(name, overrides = {}) {
@@ -666,6 +674,10 @@
     };
   }
 
+  function buildUnitSeries(namePrefix, count, factory) {
+    return Array.from({ length: Math.max(0, Number(count) || 0) }, (_, index) => factory(`${namePrefix} ${index + 1}`));
+  }
+
   function getArmyPresets() {
     return [
       {
@@ -686,22 +698,24 @@
               commandRating: 8,
               type: "foot",
               units: [
-                pikeShotUnit("Полк центра"),
-                pikeShotUnit("Полк правой линии"),
-                shotUnit("Шотта поддержки")
+                ...buildUnitSeries("Полк центра", 7, pikeShotUnit),
+                ...buildUnitSeries("Шотта центра", 5, shotUnit),
+                ...buildUnitSeries("Полковое орудие", 2, lightArtilleryUnit)
               ]
             },
             {
-              name: "Фланг и полковое орудие",
+              name: "Фланг и резерв",
               commander: "Кап. Говард",
               commandRating: 7,
               type: "mixed",
               units: [
-                lightCavalryUnit("Гаркебузиры фланга", {
-                  armament: "Аркебузы, сабли",
-                  notes: "Лёгкая кавалерия для охвата, давления и тревожащего огня."
-                }),
-                lightArtilleryUnit("Лёгкая артиллерия")
+                ...buildUnitSeries("Резервный полк", 5, pikeShotUnit),
+                shotUnit("Шотта фланга"),
+                ...buildUnitSeries("Конный эскадрон", 5, cavalryUnit),
+                ...buildUnitSeries("Гаркебузиры фланга", 2, lightCavalryUnit),
+                ...buildUnitSeries("Драгуны дозора", 2, dragoonUnit),
+                mediumArtilleryUnit("Пушка резерва"),
+                lightArtilleryUnit("Лёгкое орудие фланга")
               ]
             }
           ]
@@ -722,14 +736,13 @@
             {
               name: "Ударное крыло",
               commander: "Принц Руперт",
-              commandRating: 8,
+              commandRating: 9,
               type: "horse",
               units: [
-                heavyCavalryUnit("Кирасиры авангарда"),
-                cavalryUnit("Пистольеры первой линии", {
-                  notes: "Идут вслед за кирасирами и добивают уже потрясённый строй."
-                }),
-                lightCavalryUnit("Лёгкая конница преследования")
+                ...buildUnitSeries("Кирасиры авангарда", 6, heavyCavalryUnit),
+                ...buildUnitSeries("Пистольеры прорыва", 5, cavalryUnit),
+                ...buildUnitSeries("Конница преследования", 4, lightCavalryUnit),
+                ...buildUnitSeries("Драгуны сопровождения", 2, dragoonUnit)
               ]
             },
             {
@@ -738,8 +751,9 @@
               commandRating: 7,
               type: "mixed",
               units: [
-                pikeShotUnit("Пехотный якорь"),
-                dragoonUnit("Драгуны позиции")
+                ...buildUnitSeries("Пехотный якорь", 5, pikeShotUnit),
+                ...buildUnitSeries("Шотта позиции", 2, shotUnit),
+                ...buildUnitSeries("Драгуны рощи", 2, dragoonUnit)
               ]
             }
           ]
@@ -763,9 +777,9 @@
               commandRating: 8,
               type: "foot",
               units: [
-                shotUnit("Шотта левого сектора"),
-                shotUnit("Шотта правого сектора"),
-                pikeShotUnit("Пики прикрытия")
+                ...buildUnitSeries("Шотта линии", 7, shotUnit),
+                ...buildUnitSeries("Пики прикрытия", 7, pikeShotUnit),
+                ...buildUnitSeries("Батарея линии", 2, mediumArtilleryUnit)
               ]
             },
             {
@@ -774,9 +788,11 @@
               commandRating: 7,
               type: "mixed",
               units: [
-                lightArtilleryUnit("Лёгкая батарея"),
-                mediumArtilleryUnit("Средняя батарея"),
-                dragoonUnit("Драгуны прикрытия")
+                ...buildUnitSeries("Шотта батареи", 5, shotUnit),
+                ...buildUnitSeries("Пехота батареи", 5, pikeShotUnit),
+                ...buildUnitSeries("Средняя батарея", 3, mediumArtilleryUnit),
+                ...buildUnitSeries("Полковое орудие", 3, lightArtilleryUnit),
+                ...buildUnitSeries("Драгуны прикрытия", 3, dragoonUnit)
               ]
             }
           ]
@@ -800,9 +816,9 @@
               commandRating: 8,
               type: "foot",
               units: [
-                pikeShotUnit("Первая терция"),
-                pikeShotUnit("Вторая терция"),
-                shotUnit("Шотта поддержки")
+                ...buildUnitSeries("Терция первой линии", 12, pikeBlockUnit),
+                ...buildUnitSeries("Шотта первой линии", 7, shotUnit),
+                mediumArtilleryUnit("Полевое орудие авангарда")
               ]
             },
             {
@@ -811,8 +827,9 @@
               commandRating: 7,
               type: "mixed",
               units: [
-                pikeShotUnit("Резервная терция"),
-                mediumArtilleryUnit("Полевое орудие")
+                ...buildUnitSeries("Терция резерва", 12, pikeBlockUnit),
+                ...buildUnitSeries("Шотта резерва", 9, shotUnit),
+                ...buildUnitSeries("Орудие резерва", 2, mediumArtilleryUnit)
               ]
             },
             {
@@ -821,8 +838,10 @@
               commandRating: 8,
               type: "horse",
               units: [
-                cavalryUnit("Конница левого крыла"),
-                cavalryUnit("Конница правого крыла")
+                ...buildUnitSeries("Конница крыла", 7, cavalryUnit),
+                ...buildUnitSeries("Кирасиры завершения", 4, heavyCavalryUnit),
+                ...buildUnitSeries("Копейщики преследования", 2, lancerUnit),
+                lightCavalryUnit("Лёгкая конница разведки")
               ]
             }
           ]
@@ -846,9 +865,9 @@
               commandRating: 8,
               type: "foot",
               units: [
-                pikeShotUnit("Левый полк"),
-                pikeShotUnit("Правый полк"),
-                shotUnit("Шотта первой линии")
+                ...buildUnitSeries("Полк первой линии", 14, pikeShotUnit),
+                ...buildUnitSeries("Шотта первой линии", 7, shotUnit),
+                ...buildUnitSeries("Полковое орудие", 3, lightArtilleryUnit)
               ]
             },
             {
@@ -857,19 +876,22 @@
               commandRating: 7,
               type: "mixed",
               units: [
-                shotUnit("Шотта поддержки"),
-                lightArtilleryUnit("Лёгкое орудие левого сектора"),
-                lightArtilleryUnit("Лёгкое орудие правого сектора")
+                ...buildUnitSeries("Полк поддержки", 8, pikeShotUnit),
+                ...buildUnitSeries("Шотта поддержки", 6, shotUnit),
+                ...buildUnitSeries("Лёгкое орудие", 3, lightArtilleryUnit),
+                ...buildUnitSeries("Драгуны позиции", 2, dragoonUnit)
               ]
             },
             {
-              name: "Конный фланг",
+              name: "Конный фланг и быстрые орудия",
               commander: "Торстенссон",
               commandRating: 8,
               type: "horse",
               units: [
-                cavalryUnit("Кавалерия левого фланга"),
-                cavalryUnit("Кавалерия правого фланга")
+                ...buildUnitSeries("Конница фланга", 11, cavalryUnit),
+                ...buildUnitSeries("Лёгкая конница", 5, lightCavalryUnit),
+                ...buildUnitSeries("Драгуны конного крыла", 2, dragoonUnit),
+                ...buildUnitSeries("Конное орудие", 2, lightArtilleryUnit)
               ]
             }
           ]
@@ -893,9 +915,9 @@
               commandRating: 9,
               type: "horse",
               units: [
-                heavyCavalryUnit("Кирасиры авангарда"),
-                heavyCavalryUnit("Кирасиры первой линии"),
-                lightCavalryUnit("Лёгкая конница прикрытия")
+                ...buildUnitSeries("Кирасиры авангарда", 8, heavyCavalryUnit),
+                ...buildUnitSeries("Конница первой линии", 5, cavalryUnit),
+                ...buildUnitSeries("Лёгкая конница прикрытия", 2, lightCavalryUnit)
               ]
             },
             {
@@ -904,19 +926,22 @@
               commandRating: 8,
               type: "horse",
               units: [
-                heavyCavalryUnit("Кирасиры резерва"),
-                lightCavalryUnit("Лёгкая конница преследования"),
-                dragoonUnit("Драгуны опорной рощи")
+                ...buildUnitSeries("Кирасиры резерва", 7, heavyCavalryUnit),
+                ...buildUnitSeries("Конница преследования", 7, cavalryUnit),
+                ...buildUnitSeries("Лёгкая конница резерва", 2, lightCavalryUnit),
+                ...buildUnitSeries("Драгуны опорной рощи", 3, dragoonUnit)
               ]
             },
             {
               name: "Пехотный якорь",
               commander: "Сэр Джейкоб Астли",
-              commandRating: 7,
+              commandRating: 8,
               type: "foot",
               units: [
-                pikeShotUnit("Пехота центра"),
-                pikeShotUnit("Пехота второй линии")
+                ...buildUnitSeries("Пехота центра", 8, pikeShotUnit),
+                ...buildUnitSeries("Шотта центра", 6, shotUnit),
+                ...buildUnitSeries("Драгуны удержания", 2, dragoonUnit),
+                lightArtilleryUnit("Лёгкое орудие якоря")
               ]
             }
           ]
@@ -940,36 +965,59 @@
               commandRating: 8,
               type: "foot",
               units: [
-                pikeShotUnit("Пехота центра I"),
-                pikeShotUnit("Пехота центра II"),
-                pikeShotUnit("Пехота центра III"),
-                shotUnit("Шотта центра"),
-                mediumArtilleryUnit("Центральная батарея")
+                ...buildUnitSeries("Полк центральной линии", 12, pikeShotUnit),
+                ...buildUnitSeries("Шотта центральной линии", 8, shotUnit),
+                ...buildUnitSeries("Центральная батарея", 2, mediumArtilleryUnit),
+                lightArtilleryUnit("Полковое орудие центра")
               ]
             },
             {
-              name: "Поддержка и второй эшелон",
+              name: "Вторая линия",
+              commander: "Командующий центром",
+              commandRating: 8,
+              type: "foot",
+              units: [
+                ...buildUnitSeries("Полк второй линии", 10, pikeShotUnit),
+                ...buildUnitSeries("Шотта второй линии", 6, shotUnit),
+                mediumArtilleryUnit("Батарея второй линии"),
+                lightArtilleryUnit("Лёгкое орудие второй линии")
+              ]
+            },
+            {
+              name: "Поддержка и резерв",
               commander: "Командующий резервом",
               commandRating: 8,
               type: "mixed",
               units: [
-                pikeShotUnit("Пехота второй линии I"),
-                pikeShotUnit("Пехота второй линии II"),
-                shotUnit("Шотта поддержки"),
-                dragoonUnit("Драгуны левого сектора"),
-                dragoonUnit("Драгуны правого сектора"),
-                lightArtilleryUnit("Полковое орудие")
+                ...buildUnitSeries("Резервный полк", 8, pikeShotUnit),
+                ...buildUnitSeries("Шотта резерва", 5, shotUnit),
+                ...buildUnitSeries("Драгуны резерва", 2, dragoonUnit),
+                ...buildUnitSeries("Полковое орудие резерва", 2, lightArtilleryUnit),
+                mediumArtilleryUnit("Тяжёлое орудие резерва")
               ]
             },
             {
-              name: "Конное крыло",
+              name: "Левое конное крыло",
               commander: "Командующий конницей",
               commandRating: 8,
               type: "horse",
               units: [
-                cavalryUnit("Конница первой линии"),
-                cavalryUnit("Конница второй линии"),
-                cavalryUnit("Конный резерв")
+                ...buildUnitSeries("Конница левого крыла", 7, cavalryUnit),
+                ...buildUnitSeries("Кирасиры левого крыла", 5, heavyCavalryUnit),
+                ...buildUnitSeries("Лёгкая конница левого крыла", 3, lightCavalryUnit),
+                dragoonUnit("Драгуны левого крыла")
+              ]
+            },
+            {
+              name: "Правое конное крыло",
+              commander: "Командующий правым крылом",
+              commandRating: 8,
+              type: "horse",
+              units: [
+                ...buildUnitSeries("Конница правого крыла", 6, cavalryUnit),
+                ...buildUnitSeries("Кирасиры правого крыла", 4, heavyCavalryUnit),
+                ...buildUnitSeries("Лёгкая конница правого крыла", 2, lightCavalryUnit),
+                dragoonUnit("Драгуны правого крыла")
               ]
             }
           ]
@@ -993,10 +1041,11 @@
               commandRating: 8,
               type: "mixed",
               units: [
-                shotUnit("Шотта левого сектора"),
-                pikeShotUnit("Пехота прикрытия левого сектора"),
-                lightArtilleryUnit("Лёгкая батарея"),
-                dragoonUnit("Драгуны заставы")
+                ...buildUnitSeries("Шотта левого сектора", 8, shotUnit),
+                ...buildUnitSeries("Пехота прикрытия левого сектора", 7, pikeShotUnit),
+                ...buildUnitSeries("Средняя батарея левого сектора", 3, mediumArtilleryUnit),
+                ...buildUnitSeries("Полковое орудие левого сектора", 2, lightArtilleryUnit),
+                ...buildUnitSeries("Драгуны заставы", 2, dragoonUnit)
               ]
             },
             {
@@ -1005,22 +1054,49 @@
               commandRating: 8,
               type: "foot",
               units: [
-                shotUnit("Шотта центра"),
-                pikeShotUnit("Пехота центра"),
-                mediumArtilleryUnit("Средняя батарея центра")
+                ...buildUnitSeries("Шотта центра", 8, shotUnit),
+                ...buildUnitSeries("Пехота центра", 8, pikeShotUnit),
+                ...buildUnitSeries("Средняя батарея центра", 5, mediumArtilleryUnit),
+                ...buildUnitSeries("Лёгкая батарея центра", 3, lightArtilleryUnit)
               ]
             },
             {
-              name: "Правая линия и резерв",
+              name: "Правая батарейная линия",
               commander: "Кап. южного фланга",
+              commandRating: 8,
+              type: "mixed",
+              units: [
+                ...buildUnitSeries("Шотта правого сектора", 8, shotUnit),
+                ...buildUnitSeries("Пехота прикрытия правого сектора", 7, pikeShotUnit),
+                ...buildUnitSeries("Средняя батарея правого сектора", 3, mediumArtilleryUnit),
+                ...buildUnitSeries("Полковое орудие правого сектора", 2, lightArtilleryUnit),
+                ...buildUnitSeries("Драгуны правого фланга", 2, dragoonUnit)
+              ]
+            },
+            {
+              name: "Резервная линия",
+              commander: "Командующий резервом",
               commandRating: 7,
               type: "mixed",
               units: [
-                shotUnit("Шотта правого сектора"),
-                pikeShotUnit("Пехота прикрытия правого сектора"),
-                mediumArtilleryUnit("Средняя батарея правого сектора"),
-                dragoonUnit("Драгуны правого фланга"),
-                cavalryUnit("Конный резерв")
+                ...buildUnitSeries("Шотта резерва", 7, shotUnit),
+                ...buildUnitSeries("Пехота резерва", 5, pikeShotUnit),
+                ...buildUnitSeries("Резервная батарея", 2, mediumArtilleryUnit),
+                ...buildUnitSeries("Драгуны резерва", 2, dragoonUnit),
+                ...buildUnitSeries("Конный резерв", 2, cavalryUnit)
+              ]
+            },
+            {
+              name: "Подвижный резерв",
+              commander: "Маршал контратаки",
+              commandRating: 7,
+              type: "mixed",
+              units: [
+                ...buildUnitSeries("Пехота мобильного резерва", 5, pikeShotUnit),
+                ...buildUnitSeries("Шотта мобильного резерва", 4, shotUnit),
+                ...buildUnitSeries("Конный резерв преследования", 4, cavalryUnit),
+                ...buildUnitSeries("Лёгкая конница резерва", 2, lightCavalryUnit),
+                lightArtilleryUnit("Лёгкое орудие мобильного резерва")
               ]
             }
           ]
@@ -1044,21 +1120,32 @@
               commandRating: 8,
               type: "foot",
               units: [
-                pikeShotUnit("Пехота левого центра I"),
-                pikeShotUnit("Пехота левого центра II"),
-                pikeShotUnit("Пехота левого центра III")
+                ...buildUnitSeries("Пехота левого центра", 10, pikeShotUnit),
+                ...buildUnitSeries("Шотта левого центра", 6, shotUnit),
+                mediumArtilleryUnit("Пушка левой наковальни")
               ]
             },
             {
               name: "Правая наковальня",
               commander: "Сэр Генри Блэйн",
               commandRating: 8,
+              type: "foot",
+              units: [
+                ...buildUnitSeries("Пехота правого центра", 10, pikeShotUnit),
+                ...buildUnitSeries("Шотта правого центра", 6, shotUnit),
+                mediumArtilleryUnit("Пушка правой наковальни")
+              ]
+            },
+            {
+              name: "Центральный резерв",
+              commander: "Командующий резервом",
+              commandRating: 8,
               type: "mixed",
               units: [
-                pikeShotUnit("Пехота правого центра I"),
-                pikeShotUnit("Пехота правого центра II"),
-                pikeShotUnit("Пехота правого центра III"),
-                mediumArtilleryUnit("Пушка поддержки")
+                ...buildUnitSeries("Резервный полк", 8, pikeShotUnit),
+                ...buildUnitSeries("Шотта резерва", 5, shotUnit),
+                ...buildUnitSeries("Драгуны поддержки", 2, dragoonUnit),
+                ...buildUnitSeries("Полковое орудие резерва", 2, lightArtilleryUnit)
               ]
             },
             {
@@ -1067,11 +1154,21 @@
               commandRating: 9,
               type: "horse",
               units: [
-                heavyCavalryUnit("Кирасиры первой линии"),
-                heavyCavalryUnit("Кирасиры второй линии"),
-                heavyCavalryUnit("Кирасиры резерва"),
-                heavyCavalryUnit("Кирасиры добивания"),
-                dragoonUnit("Драгуны сопровождения")
+                ...buildUnitSeries("Кирасиры первой линии", 8, heavyCavalryUnit),
+                ...buildUnitSeries("Конница первой волны", 6, cavalryUnit),
+                ...buildUnitSeries("Лёгкая конница преследования", 2, lightCavalryUnit),
+                ...buildUnitSeries("Драгуны сопровождения", 2, dragoonUnit)
+              ]
+            },
+            {
+              name: "Второй удар",
+              commander: "Маршал добивания",
+              commandRating: 8,
+              type: "horse",
+              units: [
+                ...buildUnitSeries("Кирасиры второй линии", 7, heavyCavalryUnit),
+                ...buildUnitSeries("Конница второй волны", 5, cavalryUnit),
+                ...buildUnitSeries("Лёгкая конница добивания", 2, lightCavalryUnit)
               ]
             }
           ]
@@ -1207,8 +1304,8 @@
                     morale: String(unit.morale || ""),
                     stamina: Math.max(1, Number(unit.stamina) || 3),
                     artKey: String(unit.artKey || ""),
-                    pointsOverride: Number.isFinite(Number(unit.pointsOverride)) ? Number(unit.pointsOverride) : null,
-                    pointsShootValue: Number.isFinite(Number(unit.pointsShootValue)) ? Number(unit.pointsShootValue) : null,
+                    pointsOverride: getOptionalNumber(unit.pointsOverride),
+                    pointsShootValue: getOptionalNumber(unit.pointsShootValue),
                     pointsUnavailable: Boolean(unit.pointsUnavailable),
                     specialRules: localizeSpecialRuleList(String(unit.specialRules || "")),
                     notes: translateLegacyText(String(unit.notes || "")),
@@ -2118,7 +2215,7 @@
       });
     }
 
-    const explicitPoints = Number.isFinite(Number(unit.pointsOverride)) ? Number(unit.pointsOverride) : null;
+    const explicitPoints = getOptionalNumber(unit.pointsOverride);
     if (explicitPoints !== null) {
       return buildPointResult(explicitPoints, {
         official: true,
@@ -2204,8 +2301,9 @@
   }
 
   function getPointShootValue(unit) {
-    if (Number.isFinite(Number(unit.pointsShootValue))) {
-      return Number(unit.pointsShootValue);
+    const explicitValue = getOptionalNumber(unit.pointsShootValue);
+    if (explicitValue !== null) {
+      return explicitValue;
     }
     const values = String(unit.shoot || "")
       .match(/\d+/g)?.map((value) => Number(value)) || [];
@@ -2521,14 +2619,14 @@
 
   function syncUnitTemplateMetadata(unit) {
     const template = getTemplateById(unit.templateId || "custom");
-    const currentOverride = Number.isFinite(Number(unit.pointsOverride)) ? Number(unit.pointsOverride) : null;
-    const currentShootValue = Number.isFinite(Number(unit.pointsShootValue)) ? Number(unit.pointsShootValue) : null;
+    const currentOverride = getOptionalNumber(unit.pointsOverride);
+    const currentShootValue = getOptionalNumber(unit.pointsShootValue);
     const matchesTemplate = template && template.id !== "custom" ? isTemplateProfileMatch(unit, template) : false;
 
     if (template && template.id !== "custom") {
       unit.artKey = template.artKey || detectUnitArtKey({ ...unit, artKey: "" });
-      unit.pointsOverride = matchesTemplate && Number.isFinite(Number(template.pointsOverride)) ? Number(template.pointsOverride) : null;
-      unit.pointsShootValue = Number.isFinite(Number(template.pointsShootValue)) ? Number(template.pointsShootValue) : currentShootValue;
+      unit.pointsOverride = matchesTemplate ? getOptionalNumber(template.pointsOverride) : null;
+      unit.pointsShootValue = getOptionalNumber(template.pointsShootValue) ?? currentShootValue;
       unit.pointsUnavailable = Boolean(template.pointsUnavailable);
       unit.specialRules = localizeSpecialRuleList(unit.specialRules || template.specialRules || "");
       return unit;
@@ -2732,6 +2830,14 @@
       .trim()
       .toLowerCase()
       .replace(/\s+/g, " ");
+  }
+
+  function getOptionalNumber(value) {
+    if (value === null || value === undefined || value === "") {
+      return null;
+    }
+    const numericValue = Number(value);
+    return Number.isFinite(numericValue) ? numericValue : null;
   }
 
   function uid(prefix) { return `${prefix}-${Math.random().toString(36).slice(2, 9)}-${Date.now().toString(36).slice(-4)}`; }
