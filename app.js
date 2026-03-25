@@ -66,6 +66,11 @@
       exportState();
       closeUtilityMenu("army-session-panel");
     });
+    document.getElementById("export-army-pdf").addEventListener("click", () => {
+      if (exportArmyPdf()) {
+        closeUtilityMenu("army-session-panel");
+      }
+    });
     document.getElementById("import-state").addEventListener("click", () => {
       closeUtilityMenu("army-session-panel");
       refs.importFileInput.click();
@@ -1752,6 +1757,7 @@
     const libraryPanel = document.getElementById("army-library-panel");
     const sessionPanel = document.getElementById("army-session-panel");
     const soloArmySwitch = document.getElementById("solo-army-switch");
+    const exportArmyPdfButton = document.getElementById("export-army-pdf");
     const workspaceKicker = document.getElementById("army-workspace-kicker");
     const workspaceTitle = document.getElementById("army-workspace-title");
 
@@ -1763,6 +1769,9 @@
     }
     if (sessionPanel) {
       sessionPanel.hidden = false;
+    }
+    if (exportArmyPdfButton) {
+      exportArmyPdfButton.hidden = isGameView;
     }
     if (soloArmySwitch) {
       soloArmySwitch.hidden = !isSoloView;
@@ -2461,6 +2470,562 @@
     link.download = `pike-shotte-sostoyanie-${stamp}.json`;
     link.click();
     URL.revokeObjectURL(link.href);
+  }
+
+  function exportArmyPdf() {
+    if (state.armyView !== "solo") {
+      window.alert("Экспорт PDF доступен в режиме «Армибилдер» для одной выбранной армии.");
+      return false;
+    }
+
+    const armyId = state.soloArmyId === "red" ? "red" : "blue";
+    const army = state.armies[armyId];
+    if (!army || !army.battalias.length) {
+      window.alert("Сначала собери хотя бы одну баталию, а затем экспортируй армию в PDF.");
+      return false;
+    }
+
+    const printWindow = window.open("", "_blank", "width=1400,height=960");
+    if (!printWindow) {
+      window.alert("Браузер заблокировал окно печати. Разреши всплывающие окна для сайта и попробуй ещё раз.");
+      return false;
+    }
+
+    printWindow.document.write(buildArmyPdfDocument(armyId, army));
+    printWindow.document.close();
+    return true;
+  }
+
+  function buildArmyPdfDocument(armyId, army) {
+    const totalUnits = army.battalias.reduce((sum, battalia) => sum + battalia.units.length, 0);
+    const battaliaCount = army.battalias.length;
+    const points = getArmyPoints(army);
+    const generatedOn = new Intl.DateTimeFormat("ru-RU", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric"
+    }).format(new Date());
+    const sideLabel = armyId === "red" ? "Красная армия" : "Синяя армия";
+    const densityClass = getArmyPdfDensityClass(battaliaCount, totalUnits);
+    const baseHref = new URL(".", window.location.href).href;
+    const palette = armyId === "red"
+      ? {
+          start: "#8f3328",
+          end: "#5e1c18",
+          soft: "rgba(159, 58, 44, 0.12)",
+          line: "rgba(120, 36, 30, 0.24)"
+        }
+      : {
+          start: "#315c74",
+          end: "#23493d",
+          soft: "rgba(49, 92, 116, 0.12)",
+          line: "rgba(35, 73, 61, 0.24)"
+        };
+
+    return `<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <base href="${escapeAttribute(baseHref)}">
+  <title>${escapeHtml(army.name)} | PDF</title>
+  <style>
+    @page {
+      size: A4 landscape;
+      margin: 8mm;
+    }
+
+    :root {
+      --paper: #f7f0e2;
+      --panel: rgba(255, 252, 247, 0.92);
+      --ink: #1d1a17;
+      --ink-soft: #564d41;
+      --line: ${palette.line};
+      --accent-start: ${palette.start};
+      --accent-end: ${palette.end};
+      --accent-soft: ${palette.soft};
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: "Palatino Linotype", "Book Antiqua", Georgia, serif;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    body {
+      min-height: 100vh;
+    }
+
+    .pdf-sheet {
+      min-height: calc(210mm - 16mm);
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 8px;
+    }
+
+    .pdf-header {
+      display: grid;
+      gap: 8px;
+      padding: 14px 16px;
+      border-radius: 20px;
+      border: 1px solid var(--line);
+      background:
+        linear-gradient(135deg, rgba(255, 251, 244, 0.96), rgba(241, 233, 216, 0.92)),
+        radial-gradient(circle at top right, var(--accent-soft), transparent 30%);
+      box-shadow: 0 10px 28px rgba(48, 32, 17, 0.08);
+    }
+
+    .pdf-header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .pdf-brandline {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .pdf-brandmark {
+      width: 34px;
+      height: 34px;
+      flex: 0 0 auto;
+    }
+
+    .pdf-brandmark img {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .pdf-eyebrow {
+      margin: 0 0 4px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      font: 700 8pt/1 "Trebuchet MS", "Gill Sans", sans-serif;
+      color: #7a3b1f;
+    }
+
+    h1 {
+      margin: 0;
+      font: 700 24pt/0.98 Georgia, "Times New Roman", serif;
+    }
+
+    .pdf-subtitle {
+      margin: 4px 0 0;
+      color: var(--ink-soft);
+      font: 600 9pt/1.3 "Trebuchet MS", "Gill Sans", sans-serif;
+    }
+
+    .pdf-side-pill {
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: linear-gradient(145deg, var(--accent-start), var(--accent-end));
+      color: #fff8ef;
+      font: 700 9pt/1 "Trebuchet MS", "Gill Sans", sans-serif;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .pdf-metrics {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .pdf-metric {
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: rgba(255, 253, 249, 0.88);
+    }
+
+    .pdf-metric span {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--ink-soft);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font: 700 7.5pt/1 "Trebuchet MS", "Gill Sans", sans-serif;
+    }
+
+    .pdf-metric strong {
+      font: 700 16pt/1.02 Georgia, "Times New Roman", serif;
+    }
+
+    .pdf-objective {
+      padding: 9px 12px;
+      border-left: 4px solid var(--accent-start);
+      border-radius: 12px;
+      background: rgba(255, 252, 247, 0.82);
+      color: var(--ink-soft);
+      font-size: 9pt;
+      line-height: 1.45;
+    }
+
+    .pdf-battalia-grid {
+      display: grid;
+      grid-template-columns: ${battaliaCount === 1 ? "1fr" : "repeat(2, minmax(0, 1fr))"};
+      gap: 8px;
+      align-content: start;
+    }
+
+    .pdf-battalia {
+      display: grid;
+      gap: 8px;
+      min-width: 0;
+      padding: 12px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background:
+        linear-gradient(180deg, rgba(255, 252, 247, 0.98), rgba(249, 242, 229, 0.96)),
+        linear-gradient(150deg, var(--accent-soft), transparent 32%);
+      box-shadow: 0 8px 20px rgba(52, 34, 18, 0.08);
+      break-inside: avoid;
+    }
+
+    .pdf-battalia-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: start;
+    }
+
+    .pdf-battalia-type {
+      margin: 0 0 4px;
+      color: #7a3b1f;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font: 700 7.5pt/1 "Trebuchet MS", "Gill Sans", sans-serif;
+    }
+
+    .pdf-battalia h2 {
+      margin: 0;
+      font: 700 14pt/1.02 Georgia, "Times New Roman", serif;
+    }
+
+    .pdf-battalia-command {
+      margin: 4px 0 0;
+      color: var(--ink-soft);
+      font-size: 8.5pt;
+      line-height: 1.35;
+    }
+
+    .pdf-battalia-meta {
+      display: grid;
+      gap: 6px;
+      justify-items: end;
+    }
+
+    .pdf-battalia-meta span {
+      display: inline-flex;
+      align-items: center;
+      min-height: 26px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255, 253, 249, 0.86);
+      font: 700 7.8pt/1 "Trebuchet MS", "Gill Sans", sans-serif;
+      white-space: nowrap;
+    }
+
+    .pdf-battalia-notes {
+      margin: 0;
+      color: var(--ink-soft);
+      font-size: 8.2pt;
+      line-height: 1.4;
+    }
+
+    .pdf-unit-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      border-radius: 12px;
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.5);
+    }
+
+    .pdf-unit-table th,
+    .pdf-unit-table td {
+      padding: 6px 6px;
+      border-bottom: 1px solid rgba(86, 67, 45, 0.12);
+      vertical-align: top;
+      font-size: 8pt;
+      line-height: 1.25;
+      text-align: left;
+    }
+
+    .pdf-unit-table th {
+      color: var(--ink-soft);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font: 700 6.8pt/1 "Trebuchet MS", "Gill Sans", sans-serif;
+      background: rgba(94, 72, 48, 0.06);
+    }
+
+    .pdf-unit-table tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .pdf-unit-table th:first-child,
+    .pdf-unit-table td:first-child {
+      width: 42%;
+    }
+
+    .pdf-unit-table th:not(:first-child),
+    .pdf-unit-table td:not(:first-child) {
+      width: 8.285%;
+    }
+
+    .pdf-unit-name {
+      display: block;
+      margin-bottom: 2px;
+      font-weight: 700;
+      font-size: 8.7pt;
+    }
+
+    .pdf-unit-meta,
+    .pdf-unit-extra {
+      display: block;
+      color: var(--ink-soft);
+    }
+
+    .pdf-unit-extra {
+      margin-top: 2px;
+      font-size: 7.3pt;
+      line-height: 1.28;
+    }
+
+    .pdf-empty {
+      color: var(--ink-soft);
+      font-style: italic;
+    }
+
+    .pdf-footer-note {
+      color: rgba(86, 77, 65, 0.82);
+      text-align: right;
+      font: 700 7.4pt/1 "Trebuchet MS", "Gill Sans", sans-serif;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .pdf-sheet.is-compact h1 {
+      font-size: 21pt;
+    }
+
+    .pdf-sheet.is-compact .pdf-header {
+      padding: 12px 14px;
+    }
+
+    .pdf-sheet.is-compact .pdf-battalia {
+      padding: 10px;
+    }
+
+    .pdf-sheet.is-compact .pdf-unit-table th,
+    .pdf-sheet.is-compact .pdf-unit-table td {
+      padding: 5px 5px;
+      font-size: 7.4pt;
+    }
+
+    .pdf-sheet.is-compact .pdf-unit-name {
+      font-size: 8pt;
+    }
+
+    .pdf-sheet.is-compact .pdf-unit-extra {
+      font-size: 6.9pt;
+    }
+
+    .pdf-sheet.is-tight h1 {
+      font-size: 19pt;
+    }
+
+    .pdf-sheet.is-tight .pdf-header {
+      padding: 10px 12px;
+    }
+
+    .pdf-sheet.is-tight .pdf-battalia {
+      padding: 9px;
+      gap: 6px;
+    }
+
+    .pdf-sheet.is-tight .pdf-unit-table th,
+    .pdf-sheet.is-tight .pdf-unit-table td {
+      padding: 4px 4px;
+      font-size: 6.9pt;
+    }
+
+    .pdf-sheet.is-tight .pdf-unit-name {
+      font-size: 7.4pt;
+    }
+
+    .pdf-sheet.is-tight .pdf-unit-extra {
+      font-size: 6.4pt;
+    }
+  </style>
+</head>
+<body>
+  <div class="pdf-sheet ${escapeAttribute(densityClass)}">
+    <header class="pdf-header">
+      <div class="pdf-header-top">
+        <div class="pdf-brandline">
+          <div class="pdf-brandmark">
+            <img src="./assets/site/favicon.svg" alt="">
+          </div>
+          <div>
+            <p class="pdf-eyebrow">Army Build Export</p>
+            <h1>${escapeHtml(army.name)}</h1>
+            <p class="pdf-subtitle">${escapeHtml(sideLabel)} · Pike &amp; Shotte · ${escapeHtml(generatedOn)}</p>
+          </div>
+        </div>
+        <span class="pdf-side-pill">${escapeHtml(sideLabel)}</span>
+      </div>
+
+      <div class="pdf-metrics">
+        <div class="pdf-metric">
+          <span>Стоимость армии</span>
+          <strong>${escapeHtml(formatPointsValue(points))}</strong>
+        </div>
+        <div class="pdf-metric">
+          <span>Баталии</span>
+          <strong>${escapeHtml(String(battaliaCount))}</strong>
+        </div>
+        <div class="pdf-metric">
+          <span>Юниты</span>
+          <strong>${escapeHtml(String(totalUnits))}</strong>
+        </div>
+      </div>
+
+      ${army.objective ? `<div class="pdf-objective"><strong>Задача:</strong> ${escapeHtml(army.objective)}</div>` : ""}
+    </header>
+
+    <section class="pdf-battalia-grid">
+      ${army.battalias.map((battalia) => renderArmyPdfBattalia(battalia)).join("")}
+    </section>
+
+    <div class="pdf-footer-note">Открой печать и выбери «Сохранить как PDF»</div>
+  </div>
+
+  <script>
+    window.addEventListener("load", () => {
+      setTimeout(() => {
+        window.focus();
+        window.print();
+      }, 280);
+      window.addEventListener("afterprint", () => window.close());
+    });
+  </script>
+</body>
+</html>`;
+  }
+
+  function getArmyPdfDensityClass(battaliaCount, totalUnits) {
+    if (totalUnits >= 16 || battaliaCount >= 4) {
+      return "is-tight";
+    }
+    if (totalUnits >= 10 || battaliaCount >= 3) {
+      return "is-compact";
+    }
+    return "";
+  }
+
+  function renderArmyPdfBattalia(battalia) {
+    const points = getBattaliaPoints(battalia);
+    const unitRows = battalia.units.length
+      ? battalia.units.map((unit) => renderArmyPdfUnit(unit)).join("")
+      : `<tr><td class="pdf-empty" colspan="8">В баталии пока нет юнитов.</td></tr>`;
+
+    return `
+      <article class="pdf-battalia">
+        <div class="pdf-battalia-head">
+          <div>
+            <p class="pdf-battalia-type">${escapeHtml(formatBattaliaType(battalia.type))}</p>
+            <h2>${escapeHtml(battalia.name)}</h2>
+            <p class="pdf-battalia-command">Командир: ${escapeHtml(battalia.commander || "не указан")} · Рейтинг ${escapeHtml(String(battalia.commandRating))}</p>
+          </div>
+          <div class="pdf-battalia-meta">
+            <span>${escapeHtml(formatPointsValue(points))}</span>
+            <span>${escapeHtml(String(battalia.units.length))} юн.</span>
+          </div>
+        </div>
+
+        ${battalia.notes ? `<p class="pdf-battalia-notes">${escapeHtml(compactPrintText(battalia.notes, 180))}</p>` : ""}
+
+        <table class="pdf-unit-table">
+          <thead>
+            <tr>
+              <th>Юнит</th>
+              <th>M</th>
+              <th>Sh</th>
+              <th>Rng</th>
+              <th>Ml</th>
+              <th>Mor</th>
+              <th>St</th>
+              <th>Pts</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${unitRows}
+          </tbody>
+        </table>
+      </article>
+    `;
+  }
+
+  function renderArmyPdfUnit(unit) {
+    const specialRules = splitSpecialRules(unit.specialRules || "").join(", ");
+    const detailLine = [
+      `${formatCategory(unit.category)} · ${formatFormation(unit.formation)}`,
+      unit.armament || ""
+    ].filter(Boolean).join(" · ");
+    const extraParts = [];
+    if (specialRules) {
+      extraParts.push(`Правила: ${compactPrintText(specialRules, 110)}`);
+    }
+    if (unit.notes) {
+      extraParts.push(`Заметка: ${compactPrintText(unit.notes, 72)}`);
+    }
+
+    return `
+      <tr>
+        <td>
+          <span class="pdf-unit-name">${escapeHtml(unit.name)}</span>
+          <span class="pdf-unit-meta">${escapeHtml(detailLine)}</span>
+          ${extraParts.length ? `<span class="pdf-unit-extra">${escapeHtml(extraParts.join(" · "))}</span>` : ""}
+        </td>
+        <td>${escapeHtml(unit.move || "—")}</td>
+        <td>${escapeHtml(unit.shoot || "—")}</td>
+        <td>${escapeHtml(unit.range || "—")}</td>
+        <td>${escapeHtml(unit.melee || "—")}</td>
+        <td>${escapeHtml(unit.morale || "—")}</td>
+        <td>${escapeHtml(String(unit.stamina || "—"))}</td>
+        <td>${escapeHtml(formatPointsValue(getUnitPoints(unit)))}</td>
+      </tr>
+    `;
+  }
+
+  function compactPrintText(value, maxLength) {
+    const clean = String(value || "").replace(/\s+/g, " ").trim();
+    if (!clean) {
+      return "";
+    }
+    if (clean.length <= maxLength) {
+      return clean;
+    }
+    return `${clean.slice(0, Math.max(0, maxLength - 1)).trimEnd()}…`;
   }
 
   function handleImportFile(event) {
