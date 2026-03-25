@@ -2500,14 +2500,8 @@
     const totalUnits = army.battalias.reduce((sum, battalia) => sum + battalia.units.length, 0);
     const battaliaCount = army.battalias.length;
     const points = getArmyPoints(army);
-    const generatedOn = new Intl.DateTimeFormat("ru-RU", {
-      day: "2-digit",
-      month: "long",
-      year: "numeric"
-    }).format(new Date());
-    const sideLabel = armyId === "red" ? "Красная армия" : "Синяя армия";
     const densityClass = getArmyPdfDensityClass(battaliaCount, totalUnits);
-    const baseHref = new URL(".", window.location.href).href;
+    const gridTemplate = getArmyPdfGridTemplate(battaliaCount, totalUnits);
     const palette = armyId === "red"
       ? {
           start: "#8f3328",
@@ -2528,17 +2522,15 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light">
-  <base href="${escapeAttribute(baseHref)}">
   <title>${escapeHtml(army.name)} | PDF</title>
   <style>
     @page {
       size: A4 landscape;
-      margin: 8mm;
+      margin: 5mm;
     }
 
     :root {
       --paper: #f7f0e2;
-      --panel: rgba(255, 252, 247, 0.92);
       --ink: #1d1a17;
       --ink-soft: #564d41;
       --line: ${palette.line};
@@ -2563,191 +2555,120 @@
     }
 
     body {
-      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    .pdf-print-frame {
+      width: 287mm;
+      height: 200mm;
+      overflow: hidden;
     }
 
     .pdf-sheet {
-      min-height: calc(210mm - 16mm);
+      width: 100%;
       display: grid;
-      grid-template-rows: auto 1fr auto;
-      gap: 8px;
+      gap: 5px;
+      padding: 4mm;
+      transform-origin: top left;
     }
 
-    .pdf-header {
-      display: grid;
-      gap: 8px;
-      padding: 14px 16px;
-      border-radius: 20px;
+    .pdf-topline {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 3.2mm 3.5mm;
+      border-radius: 4mm;
       border: 1px solid var(--line);
       background:
-        linear-gradient(135deg, rgba(255, 251, 244, 0.96), rgba(241, 233, 216, 0.92)),
-        radial-gradient(circle at top right, var(--accent-soft), transparent 30%);
-      box-shadow: 0 10px 28px rgba(48, 32, 17, 0.08);
-    }
-
-    .pdf-header-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-    }
-
-    .pdf-brandline {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      min-width: 0;
-    }
-
-    .pdf-brandmark {
-      width: 34px;
-      height: 34px;
-      flex: 0 0 auto;
-    }
-
-    .pdf-brandmark img {
-      display: block;
-      width: 100%;
-      height: 100%;
-    }
-
-    .pdf-eyebrow {
-      margin: 0 0 4px;
-      letter-spacing: 0.22em;
-      text-transform: uppercase;
-      font: 700 8pt/1 "Trebuchet MS", "Gill Sans", sans-serif;
-      color: #7a3b1f;
+        linear-gradient(135deg, rgba(255, 251, 244, 0.98), rgba(241, 233, 216, 0.94)),
+        radial-gradient(circle at top right, var(--accent-soft), transparent 35%);
     }
 
     h1 {
       margin: 0;
-      font: 700 24pt/0.98 Georgia, "Times New Roman", serif;
+      font: 700 17pt/0.98 Georgia, "Times New Roman", serif;
     }
 
     .pdf-subtitle {
-      margin: 4px 0 0;
-      color: var(--ink-soft);
-      font: 600 9pt/1.3 "Trebuchet MS", "Gill Sans", sans-serif;
-    }
-
-    .pdf-side-pill {
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: linear-gradient(145deg, var(--accent-start), var(--accent-end));
-      color: #fff8ef;
-      font: 700 9pt/1 "Trebuchet MS", "Gill Sans", sans-serif;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      white-space: nowrap;
+      display: none;
     }
 
     .pdf-metrics {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: end;
+      gap: 5px;
     }
 
     .pdf-metric {
-      padding: 10px 12px;
-      border-radius: 14px;
+      padding: 6px 9px;
+      border-radius: 999px;
       border: 1px solid var(--line);
-      background: rgba(255, 253, 249, 0.88);
-    }
-
-    .pdf-metric span {
-      display: block;
-      margin-bottom: 4px;
-      color: var(--ink-soft);
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      font: 700 7.5pt/1 "Trebuchet MS", "Gill Sans", sans-serif;
+      background: rgba(255, 253, 249, 0.86);
+      white-space: nowrap;
     }
 
     .pdf-metric strong {
-      font: 700 16pt/1.02 Georgia, "Times New Roman", serif;
-    }
-
-    .pdf-objective {
-      padding: 9px 12px;
-      border-left: 4px solid var(--accent-start);
-      border-radius: 12px;
-      background: rgba(255, 252, 247, 0.82);
-      color: var(--ink-soft);
-      font-size: 9pt;
-      line-height: 1.45;
+      font: 700 10pt/1 Georgia, "Times New Roman", serif;
     }
 
     .pdf-battalia-grid {
       display: grid;
-      grid-template-columns: ${battaliaCount === 1 ? "1fr" : "repeat(2, minmax(0, 1fr))"};
-      gap: 8px;
+      grid-template-columns: ${gridTemplate};
+      gap: 5px;
       align-content: start;
     }
 
     .pdf-battalia {
       display: grid;
-      gap: 8px;
+      gap: 5px;
       min-width: 0;
-      padding: 12px;
-      border-radius: 18px;
+      padding: 2.8mm;
+      border-radius: 4mm;
       border: 1px solid var(--line);
       background:
-        linear-gradient(180deg, rgba(255, 252, 247, 0.98), rgba(249, 242, 229, 0.96)),
-        linear-gradient(150deg, var(--accent-soft), transparent 32%);
-      box-shadow: 0 8px 20px rgba(52, 34, 18, 0.08);
+        linear-gradient(180deg, rgba(255, 252, 247, 0.98), rgba(249, 242, 229, 0.97)),
+        linear-gradient(150deg, var(--accent-soft), transparent 38%);
       break-inside: avoid;
     }
 
     .pdf-battalia-head {
       display: flex;
       justify-content: space-between;
-      gap: 12px;
+      gap: 8px;
       align-items: start;
-    }
-
-    .pdf-battalia-type {
-      margin: 0 0 4px;
-      color: #7a3b1f;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      font: 700 7.5pt/1 "Trebuchet MS", "Gill Sans", sans-serif;
     }
 
     .pdf-battalia h2 {
       margin: 0;
-      font: 700 14pt/1.02 Georgia, "Times New Roman", serif;
+      font: 700 10.2pt/1.02 Georgia, "Times New Roman", serif;
     }
 
     .pdf-battalia-command {
-      margin: 4px 0 0;
+      margin: 2px 0 0;
       color: var(--ink-soft);
-      font-size: 8.5pt;
-      line-height: 1.35;
+      font-size: 6.8pt;
+      line-height: 1.25;
     }
 
     .pdf-battalia-meta {
-      display: grid;
-      gap: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
       justify-items: end;
     }
 
     .pdf-battalia-meta span {
       display: inline-flex;
       align-items: center;
-      min-height: 26px;
-      padding: 5px 10px;
+      min-height: 20px;
+      padding: 3px 8px;
       border-radius: 999px;
       border: 1px solid var(--line);
       background: rgba(255, 253, 249, 0.86);
-      font: 700 7.8pt/1 "Trebuchet MS", "Gill Sans", sans-serif;
+      font: 700 6.7pt/1 "Trebuchet MS", "Gill Sans", sans-serif;
       white-space: nowrap;
-    }
-
-    .pdf-battalia-notes {
-      margin: 0;
-      color: var(--ink-soft);
-      font-size: 8.2pt;
-      line-height: 1.4;
     }
 
     .pdf-unit-table {
@@ -2761,11 +2682,11 @@
 
     .pdf-unit-table th,
     .pdf-unit-table td {
-      padding: 6px 6px;
+      padding: 3px 4px;
       border-bottom: 1px solid rgba(86, 67, 45, 0.12);
       vertical-align: top;
-      font-size: 8pt;
-      line-height: 1.25;
+      font-size: 6.5pt;
+      line-height: 1.18;
       text-align: left;
     }
 
@@ -2773,7 +2694,7 @@
       color: var(--ink-soft);
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      font: 700 6.8pt/1 "Trebuchet MS", "Gill Sans", sans-serif;
+      font: 700 6.1pt/1 "Trebuchet MS", "Gill Sans", sans-serif;
       background: rgba(94, 72, 48, 0.06);
     }
 
@@ -2783,31 +2704,26 @@
 
     .pdf-unit-table th:first-child,
     .pdf-unit-table td:first-child {
-      width: 42%;
+      width: 50%;
     }
 
     .pdf-unit-table th:not(:first-child),
     .pdf-unit-table td:not(:first-child) {
-      width: 8.285%;
+      width: 7.14%;
     }
 
     .pdf-unit-name {
       display: block;
-      margin-bottom: 2px;
+      margin-bottom: 1px;
       font-weight: 700;
-      font-size: 8.7pt;
+      font-size: 7.1pt;
     }
 
-    .pdf-unit-meta,
-    .pdf-unit-extra {
+    .pdf-unit-meta {
       display: block;
       color: var(--ink-soft);
-    }
-
-    .pdf-unit-extra {
-      margin-top: 2px;
-      font-size: 7.3pt;
-      line-height: 1.28;
+      font-size: 5.8pt;
+      line-height: 1.14;
     }
 
     .pdf-empty {
@@ -2815,116 +2731,111 @@
       font-style: italic;
     }
 
-    .pdf-footer-note {
-      color: rgba(86, 77, 65, 0.82);
-      text-align: right;
-      font: 700 7.4pt/1 "Trebuchet MS", "Gill Sans", sans-serif;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-    }
-
     .pdf-sheet.is-compact h1 {
-      font-size: 21pt;
+      font-size: 15.5pt;
     }
 
-    .pdf-sheet.is-compact .pdf-header {
-      padding: 12px 14px;
+    .pdf-sheet.is-compact .pdf-topline {
+      padding: 2.8mm 3mm;
     }
 
     .pdf-sheet.is-compact .pdf-battalia {
-      padding: 10px;
+      padding: 2.4mm;
     }
 
     .pdf-sheet.is-compact .pdf-unit-table th,
     .pdf-sheet.is-compact .pdf-unit-table td {
-      padding: 5px 5px;
-      font-size: 7.4pt;
+      padding: 2.5px 3px;
+      font-size: 6pt;
     }
 
     .pdf-sheet.is-compact .pdf-unit-name {
-      font-size: 8pt;
+      font-size: 6.6pt;
     }
 
-    .pdf-sheet.is-compact .pdf-unit-extra {
-      font-size: 6.9pt;
+    .pdf-sheet.is-compact .pdf-unit-meta {
+      font-size: 5.5pt;
     }
 
     .pdf-sheet.is-tight h1 {
-      font-size: 19pt;
+      font-size: 14pt;
     }
 
-    .pdf-sheet.is-tight .pdf-header {
-      padding: 10px 12px;
+    .pdf-sheet.is-tight .pdf-topline {
+      padding: 2.4mm 2.8mm;
     }
 
     .pdf-sheet.is-tight .pdf-battalia {
-      padding: 9px;
-      gap: 6px;
+      padding: 2mm;
+      gap: 4px;
     }
 
     .pdf-sheet.is-tight .pdf-unit-table th,
     .pdf-sheet.is-tight .pdf-unit-table td {
-      padding: 4px 4px;
-      font-size: 6.9pt;
+      padding: 2px 2.5px;
+      font-size: 5.6pt;
     }
 
     .pdf-sheet.is-tight .pdf-unit-name {
-      font-size: 7.4pt;
+      font-size: 6.1pt;
     }
 
-    .pdf-sheet.is-tight .pdf-unit-extra {
-      font-size: 6.4pt;
+    .pdf-sheet.is-tight .pdf-unit-meta {
+      font-size: 5.1pt;
     }
   </style>
 </head>
 <body>
-  <div class="pdf-sheet ${escapeAttribute(densityClass)}">
-    <header class="pdf-header">
-      <div class="pdf-header-top">
-        <div class="pdf-brandline">
-          <div class="pdf-brandmark">
-            <img src="./assets/site/favicon.svg" alt="">
+  <div class="pdf-print-frame">
+    <div id="pdf-sheet" class="pdf-sheet ${escapeAttribute(densityClass)}">
+      <header class="pdf-topline">
+        <div>
+          <h1>${escapeHtml(army.name)}</h1>
+        </div>
+        <div class="pdf-metrics">
+          <div class="pdf-metric">
+            <strong>${escapeHtml(formatPointsValue(points))}</strong>
           </div>
-          <div>
-            <p class="pdf-eyebrow">Army Build Export</p>
-            <h1>${escapeHtml(army.name)}</h1>
-            <p class="pdf-subtitle">${escapeHtml(sideLabel)} · Pike &amp; Shotte · ${escapeHtml(generatedOn)}</p>
+          <div class="pdf-metric">
+            <strong>${escapeHtml(String(battaliaCount))} бат.</strong>
+          </div>
+          <div class="pdf-metric">
+            <strong>${escapeHtml(String(totalUnits))} юн.</strong>
           </div>
         </div>
-        <span class="pdf-side-pill">${escapeHtml(sideLabel)}</span>
-      </div>
+      </header>
 
-      <div class="pdf-metrics">
-        <div class="pdf-metric">
-          <span>Стоимость армии</span>
-          <strong>${escapeHtml(formatPointsValue(points))}</strong>
-        </div>
-        <div class="pdf-metric">
-          <span>Баталии</span>
-          <strong>${escapeHtml(String(battaliaCount))}</strong>
-        </div>
-        <div class="pdf-metric">
-          <span>Юниты</span>
-          <strong>${escapeHtml(String(totalUnits))}</strong>
-        </div>
-      </div>
-
-      ${army.objective ? `<div class="pdf-objective"><strong>Задача:</strong> ${escapeHtml(army.objective)}</div>` : ""}
-    </header>
-
-    <section class="pdf-battalia-grid">
-      ${army.battalias.map((battalia) => renderArmyPdfBattalia(battalia)).join("")}
-    </section>
-
-    <div class="pdf-footer-note">Открой печать и выбери «Сохранить как PDF»</div>
+      <section class="pdf-battalia-grid">
+        ${army.battalias.map((battalia) => renderArmyPdfBattalia(battalia)).join("")}
+      </section>
+    </div>
   </div>
 
   <script>
+    function fitSheetToPage() {
+      const frame = document.querySelector(".pdf-print-frame");
+      const sheet = document.getElementById("pdf-sheet");
+      if (!frame || !sheet) {
+        return;
+      }
+
+      sheet.style.transform = "none";
+      const widthScale = frame.clientWidth / sheet.scrollWidth;
+      const heightScale = frame.clientHeight / sheet.scrollHeight;
+      const scale = Math.min(1, widthScale, heightScale);
+      sheet.style.transform = "scale(" + scale + ")";
+    }
+
     window.addEventListener("load", () => {
-      setTimeout(() => {
-        window.focus();
-        window.print();
-      }, 280);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          fitSheetToPage();
+          setTimeout(() => {
+            window.focus();
+            window.print();
+          }, 140);
+        });
+      });
       window.addEventListener("afterprint", () => window.close());
     });
   </script>
@@ -2933,13 +2844,23 @@
   }
 
   function getArmyPdfDensityClass(battaliaCount, totalUnits) {
-    if (totalUnits >= 16 || battaliaCount >= 4) {
+    if (totalUnits >= 14 || battaliaCount >= 4) {
       return "is-tight";
     }
-    if (totalUnits >= 10 || battaliaCount >= 3) {
+    if (totalUnits >= 8 || battaliaCount >= 3) {
       return "is-compact";
     }
     return "";
+  }
+
+  function getArmyPdfGridTemplate(battaliaCount, totalUnits) {
+    if (battaliaCount === 1) {
+      return "1fr";
+    }
+    if (battaliaCount >= 5 || totalUnits >= 14) {
+      return "repeat(3, minmax(0, 1fr))";
+    }
+    return "repeat(2, minmax(0, 1fr))";
   }
 
   function renderArmyPdfBattalia(battalia) {
@@ -2947,22 +2868,22 @@
     const unitRows = battalia.units.length
       ? battalia.units.map((unit) => renderArmyPdfUnit(unit)).join("")
       : `<tr><td class="pdf-empty" colspan="8">В баталии пока нет юнитов.</td></tr>`;
+    const commanderLine = battalia.commander
+      ? `${battalia.commander} · CR ${battalia.commandRating}`
+      : `CR ${battalia.commandRating}`;
 
     return `
       <article class="pdf-battalia">
         <div class="pdf-battalia-head">
           <div>
-            <p class="pdf-battalia-type">${escapeHtml(formatBattaliaType(battalia.type))}</p>
             <h2>${escapeHtml(battalia.name)}</h2>
-            <p class="pdf-battalia-command">Командир: ${escapeHtml(battalia.commander || "не указан")} · Рейтинг ${escapeHtml(String(battalia.commandRating))}</p>
+            <p class="pdf-battalia-command">${escapeHtml(formatBattaliaType(battalia.type))} · ${escapeHtml(commanderLine)}</p>
           </div>
           <div class="pdf-battalia-meta">
             <span>${escapeHtml(formatPointsValue(points))}</span>
             <span>${escapeHtml(String(battalia.units.length))} юн.</span>
           </div>
         </div>
-
-        ${battalia.notes ? `<p class="pdf-battalia-notes">${escapeHtml(compactPrintText(battalia.notes, 180))}</p>` : ""}
 
         <table class="pdf-unit-table">
           <thead>
@@ -2986,25 +2907,16 @@
   }
 
   function renderArmyPdfUnit(unit) {
-    const specialRules = splitSpecialRules(unit.specialRules || "").join(", ");
     const detailLine = [
       `${formatCategory(unit.category)} · ${formatFormation(unit.formation)}`,
-      unit.armament || ""
+      compactPrintText(unit.armament || "", 42)
     ].filter(Boolean).join(" · ");
-    const extraParts = [];
-    if (specialRules) {
-      extraParts.push(`Правила: ${compactPrintText(specialRules, 110)}`);
-    }
-    if (unit.notes) {
-      extraParts.push(`Заметка: ${compactPrintText(unit.notes, 72)}`);
-    }
 
     return `
       <tr>
         <td>
           <span class="pdf-unit-name">${escapeHtml(unit.name)}</span>
           <span class="pdf-unit-meta">${escapeHtml(detailLine)}</span>
-          ${extraParts.length ? `<span class="pdf-unit-extra">${escapeHtml(extraParts.join(" · "))}</span>` : ""}
         </td>
         <td>${escapeHtml(unit.move || "—")}</td>
         <td>${escapeHtml(unit.shoot || "—")}</td>
