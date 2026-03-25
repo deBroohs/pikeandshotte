@@ -602,208 +602,476 @@
   function getArmyPresetSections() {
     return [
       {
-        id: "small-engagements",
-        label: "Малые столкновения",
-        pointsLabel: "120-180 pts",
-        description: "Передовые отряды, рейды, горные вылазки и быстрые бои за подходы."
+        id: "small-scale",
+        label: "Малый масштаб",
+        pointsLabel: "1000 pts",
+        description: "1-2 баталии: компактные армии для вводной партии, фланговых боёв и быстрых столкновений."
       },
       {
-        id: "field-battles",
-        label: "Стандартное полевое сражение",
-        pointsLabel: "180-260 pts",
-        description: "Сбалансированные армии для основной партии по системе очков из рульбука."
+        id: "medium-scale",
+        label: "Средний масштаб",
+        pointsLabel: "2000 pts",
+        description: "2-3 баталии: основной формат партии с выраженными стилями боя и пространством для манёвра."
       },
       {
-        id: "decisive-assaults",
-        label: "Решающий удар и прорыв",
-        pointsLabel: "240-320 pts",
-        description: "Более тяжёлые сборки под сильный фланг, плотный центр или вторую линию."
-      },
-      {
-        id: "late-linear-war",
-        label: "Поздняя линейная война",
-        pointsLabel: "260-360 pts",
-        description: "Поздний период с firelocks, first fire и более стройной огневой линией."
+        id: "large-scale",
+        label: "Крупный масштаб",
+        pointsLabel: "3000+ pts",
+        description: "Полноценные армии: несколько командующих, широкий фронт и сильная специализация."
       }
     ];
+  }
+
+  function pikeShotUnit(name, overrides = {}) {
+    return { templateId: "pike-company-infantry", name, ...overrides };
+  }
+
+  function shotUnit(name, overrides = {}) {
+    return { templateId: "musketeers", name, ...overrides };
+  }
+
+  function cavalryUnit(name, overrides = {}) {
+    return { templateId: "cavalry", name, ...overrides };
+  }
+
+  function heavyCavalryUnit(name, overrides = {}) {
+    return { templateId: "cuirassiers", name, ...overrides };
+  }
+
+  function lightCavalryUnit(name, overrides = {}) {
+    return { templateId: "light-cavalry", name, ...overrides };
+  }
+
+  function dragoonUnit(name, overrides = {}) {
+    return { templateId: "dragoons", name, ...overrides };
+  }
+
+  function mediumArtilleryUnit(name, overrides = {}) {
+    return { templateId: "medium-artillery", name, ...overrides };
+  }
+
+  function lightArtilleryUnit(name, overrides = {}) {
+    return {
+      templateId: "medium-artillery",
+      name,
+      armament: "Лёгкая пушка",
+      move: "3\" вручную / 6\" в походном положении",
+      shoot: "2-1",
+      range: "24\"",
+      melee: "1",
+      morale: "5+",
+      stamina: 2,
+      notes: "Полковое орудие для манёвренной огневой поддержки и давления на средних дистанциях.",
+      ...overrides
+    };
   }
 
   function getArmyPresets() {
     return [
       {
-        id: "montrose-highland-host",
-        sectionId: "small-engagements",
-        name: "Горский корпус Монтроза",
-        theatre: "Английская гражданская война",
-        summary: "Армия короткой дистанции: горцы на прорыв, немного конницы и резкая атака на одном участке.",
-        art: "./assets/unit-arts/warband.jpg",
-        artPosition: "center 42%",
-        army: {
-          name: "Горский корпус Монтроза",
-          objective: "Сломать один участок линии яростным броском и не дать противнику выиграть перестрелкой.",
-          battalias: [
-            {
-              name: "Горский кулак",
-              commander: "Маркиз Монтроз",
-              commandRating: 8,
-              type: "foot",
-              units: [
-                { templateId: "highland-warband", name: "Клан Кэмеронов" },
-                { templateId: "highland-warband", name: "Клан Макдональдов" }
-              ]
-            },
-            {
-              name: "Конный заслон",
-              commander: "Аласдер Макколла",
-              commandRating: 7,
-              type: "horse",
-              units: [
-                { templateId: "light-cavalry", name: "Горская конница" },
-                { templateId: "dragoons", name: "Стрелки Монтроза" }
-              ]
-            }
-          ]
-        }
-      },
-      {
-        id: "swedish-brigade",
-        sectionId: "field-battles",
-        name: "Шведская бригада",
-        theatre: "Тридцатилетняя война",
-        summary: "Сбалансированная полевая армия с линейной пехотой, гибкой конницей и бригадной пушкой.",
+        id: "balanced-line-1000",
+        sectionId: "small-scale",
+        name: "Линейная балансная армия",
+        theatre: "Универсальный формат",
+        summary: "Классическая линия Pike & Shotte: устойчивый центр, конный фланг и одно орудие поддержки.",
         art: "./assets/unit-arts/pike-and-shot.jpg",
         artPosition: "center 34%",
         army: {
-          name: "Шведская бригада",
-          objective: "Продвигаться организованными волнами и выигрывать бой темпом приказов, а не одной лобовой схваткой.",
+          name: "Линейная балансная армия",
+          objective: "Держать центр строем, давить один фланг лёгкой конницей и подготавливать атаку огнём.",
           battalias: [
             {
-              name: "Линейная бригада",
-              commander: "Ген. Банер",
+              name: "Линейный центр",
+              commander: "Полковник Эшби",
               commandRating: 8,
               type: "foot",
               units: [
-                { templateId: "pike-company-infantry", name: "Батальон центра" },
-                { templateId: "musketeers", name: "Лёгкий батальон слева" },
-                { templateId: "musketeers", name: "Лёгкий батальон справа" }
+                pikeShotUnit("Полк центра"),
+                pikeShotUnit("Полк правой линии"),
+                shotUnit("Шотта поддержки")
               ]
             },
             {
-              name: "Подвижная конница",
-              commander: "Полк. Торстенссон",
-              commandRating: 8,
-              type: "horse",
-              units: [
-                { templateId: "cavalry", name: "Линия рейтаров" },
-                { templateId: "light-cavalry", name: "Разъезд конницы" }
-              ]
-            },
-            {
-              name: "Орудия центра",
-              commander: "Кап. Столь",
-              commandRating: 6,
-              type: "artillery",
-              units: [
-                { templateId: "medium-artillery", name: "Бригадная пушка" }
-              ]
-            }
-          ]
-        }
-      },
-      {
-        sectionId: "decisive-assaults",
-        id: "french-ordonnance",
-        name: "Французская ордонансная армия",
-        theatre: "Итальянские войны",
-        summary: "Жандармы и швейцарский центр: ранний Pike & Shotte как один концентрированный удар.",
-        art: "./assets/arts/scenario-cavalry.jpg",
-        artPosition: "center 38%",
-        army: {
-          name: "Французская ордонансная армия",
-          objective: "Сковать противника центром и решить бой быстрым ударом жандармов по одному направлению.",
-          battalias: [
-            {
-              name: "Швейцарский центр",
-              commander: "Сеньор де Лотрек",
-              commandRating: 8,
-              type: "foot",
-              units: [
-                { templateId: "pike-block", name: "Швейцарские пики" },
-                { templateId: "musketeers", name: "Аркебузиры слева" },
-                { templateId: "musketeers", name: "Аркебузиры справа" }
-              ]
-            },
-            {
-              name: "Жандармы авангарда",
-              commander: "Герцог де Немур",
-              commandRating: 8,
-              type: "horse",
-              units: [
-                { templateId: "lancers", name: "Жандармы первой линии" },
-                { templateId: "lancers", name: "Жандармы резерва" }
-              ]
-            },
-            {
-              name: "Орудия прорыва",
-              commander: "Мастер Жирар",
-              commandRating: 6,
-              type: "artillery",
-              units: [
-                { templateId: "medium-artillery", name: "Фальконет батареи" }
-              ]
-            }
-          ]
-        }
-      },
-      {
-        id: "grand-alliance",
-        sectionId: "late-linear-war",
-        name: "Бригада Великого альянса",
-        theatre: "Войны Людовика XIV",
-        summary: "Поздний Pike & Shotte: линия, первый залп, штыки-пробки и более дисциплинированное командование.",
-        art: "./assets/arts/scenario-firelock.jpg",
-        artPosition: "center 32%",
-        army: {
-          name: "Бригада Великого альянса",
-          objective: "Удерживать строй залпами, защищать городские подступы и не отдавать инициативу французскому флангу.",
-          battalias: [
-            {
-              name: "Линейная пехота",
-              commander: "Принц Вальдек",
-              commandRating: 8,
-              type: "foot",
-              units: [
-                { templateId: "guard-infantry", name: "Голландская гвардия" },
-                { templateId: "firelock-infantry", name: "Британский батальон" },
-                { templateId: "firelock-infantry", name: "Союзный батальон" }
-              ]
-            },
-            {
-              name: "Конно-драгунский фланг",
-              commander: "Ген. Оверкерк",
-              commandRating: 8,
-              type: "horse",
-              units: [
-                { templateId: "cavalry", name: "Конница Альянса" },
-                { templateId: "light-cavalry", name: "Лёгкая конница" }
-              ]
-            },
-            {
-              name: "Драгуны под прикрытием",
-              commander: "Кап. Тальмаш",
+              name: "Фланг и полковое орудие",
+              commander: "Кап. Говард",
               commandRating: 7,
               type: "mixed",
               units: [
-                { templateId: "dragoons", name: "Драгуны гарнизона" }
+                lightCavalryUnit("Гаркебузиры фланга", {
+                  armament: "Аркебузы, сабли",
+                  notes: "Лёгкая кавалерия для охвата, давления и тревожащего огня."
+                }),
+                lightArtilleryUnit("Лёгкая артиллерия")
+              ]
+            }
+          ]
+        }
+      },
+      {
+        id: "cavalry-breakthrough-1000",
+        sectionId: "small-scale",
+        name: "Агрессивная кавалерийская армия",
+        theatre: "Ударный формат",
+        summary: "Быстрый прорыв: тяжёлая конница врезается в крыло, пехота лишь удерживает опорную точку.",
+        art: "./assets/arts/scenario-cavalry.jpg",
+        artPosition: "center 38%",
+        army: {
+          name: "Агрессивная кавалерийская армия",
+          objective: "Собрать максимум скорости на одном направлении и сломать фланг до того, как противник развернёт огонь.",
+          battalias: [
+            {
+              name: "Ударное крыло",
+              commander: "Принц Руперт",
+              commandRating: 8,
+              type: "horse",
+              units: [
+                heavyCavalryUnit("Кирасиры авангарда"),
+                cavalryUnit("Пистольеры первой линии", {
+                  notes: "Идут вслед за кирасирами и добивают уже потрясённый строй."
+                }),
+                lightCavalryUnit("Лёгкая конница преследования")
               ]
             },
             {
-              name: "Полковая артиллерия",
-              commander: "Мастер Блюм",
-              commandRating: 6,
-              type: "artillery",
+              name: "Якорь и экран",
+              commander: "Кап. Фицрой",
+              commandRating: 7,
+              type: "mixed",
               units: [
-                { templateId: "medium-artillery", name: "Орудие центра" }
+                pikeShotUnit("Пехотный якорь"),
+                dragoonUnit("Драгуны позиции")
+              ]
+            }
+          ]
+        }
+      },
+      {
+        id: "gunline-1000",
+        sectionId: "small-scale",
+        name: "Огневая армия",
+        theatre: "Оборонительный формат",
+        summary: "Defensive gunline: линия шотта, двойная батарея и прикрытие драгунами.",
+        art: "./assets/unit-arts/artyl.jpg",
+        artPosition: "center 48%",
+        army: {
+          name: "Огневая армия",
+          objective: "Стоять на позиции, ломать строй артиллерией и вынуждать врага атаковать в неудобный сектор.",
+          battalias: [
+            {
+              name: "Огневая линия",
+              commander: "Майор Эллиот",
+              commandRating: 8,
+              type: "foot",
+              units: [
+                shotUnit("Шотта левого сектора"),
+                shotUnit("Шотта правого сектора"),
+                pikeShotUnit("Пики прикрытия")
+              ]
+            },
+            {
+              name: "Батарея позиции",
+              commander: "Мастер Локк",
+              commandRating: 7,
+              type: "mixed",
+              units: [
+                lightArtilleryUnit("Лёгкая батарея"),
+                mediumArtilleryUnit("Средняя батарея"),
+                dragoonUnit("Драгуны прикрытия")
+              ]
+            }
+          ]
+        }
+      },
+      {
+        id: "classic-tercia-2000",
+        sectionId: "medium-scale",
+        name: "Классическая терция",
+        theatre: "Исторический формат",
+        summary: "Глубокий центр, медленное наступление и завершающий удар кавалерии после огневого давления.",
+        art: "./assets/unit-arts/pike-block.jpg",
+        artPosition: "center 40%",
+        army: {
+          name: "Классическая терция",
+          objective: "Выигрывать бой центром, а не скоростью: давить строем, терпеть входящий огонь и дожимать конницей.",
+          battalias: [
+            {
+              name: "Передняя терция",
+              commander: "Граф Тилли",
+              commandRating: 8,
+              type: "foot",
+              units: [
+                pikeShotUnit("Первая терция"),
+                pikeShotUnit("Вторая терция"),
+                shotUnit("Шотта поддержки")
+              ]
+            },
+            {
+              name: "Резерв центра",
+              commander: "Дон Саласар",
+              commandRating: 7,
+              type: "mixed",
+              units: [
+                pikeShotUnit("Резервная терция"),
+                mediumArtilleryUnit("Полевое орудие")
+              ]
+            },
+            {
+              name: "Конное завершение",
+              commander: "Маршал Кордова",
+              commandRating: 8,
+              type: "horse",
+              units: [
+                cavalryUnit("Конница левого крыла"),
+                cavalryUnit("Конница правого крыла")
+              ]
+            }
+          ]
+        }
+      },
+      {
+        id: "swedish-style-2000",
+        sectionId: "medium-scale",
+        name: "Шведский стиль",
+        theatre: "Наступательный формат",
+        summary: "Мобильная пехота, быстрые орудия и давление строем вперёд без долгой паузы под огнём.",
+        art: "./assets/unit-arts/musketeers.jpg",
+        artPosition: "center 36%",
+        army: {
+          name: "Шведский стиль",
+          objective: "Продвигать линию быстрее противника, выигрывая бой сочетанием темпа, огня и короткой атаки.",
+          battalias: [
+            {
+              name: "Первая линия",
+              commander: "Густав Горн",
+              commandRating: 8,
+              type: "foot",
+              units: [
+                pikeShotUnit("Левый полк"),
+                pikeShotUnit("Правый полк"),
+                shotUnit("Шотта первой линии")
+              ]
+            },
+            {
+              name: "Орудия и поддержка",
+              commander: "Банер",
+              commandRating: 7,
+              type: "mixed",
+              units: [
+                shotUnit("Шотта поддержки"),
+                lightArtilleryUnit("Лёгкое орудие левого сектора"),
+                lightArtilleryUnit("Лёгкое орудие правого сектора")
+              ]
+            },
+            {
+              name: "Конный фланг",
+              commander: "Торстенссон",
+              commandRating: 8,
+              type: "horse",
+              units: [
+                cavalryUnit("Кавалерия левого фланга"),
+                cavalryUnit("Кавалерия правого фланга")
+              ]
+            }
+          ]
+        }
+      },
+      {
+        id: "royalist-cavalry-2000",
+        sectionId: "medium-scale",
+        name: "Кавалерийский роялист",
+        theatre: "Фланговый формат",
+        summary: "Тяжёлая конница доминирует в манёвре, а пехота лишь фиксирует центр до прорыва.",
+        art: "./assets/unit-arts/cuirassiers.jpg",
+        artPosition: "center 46%",
+        army: {
+          name: "Кавалерийский роялист",
+          objective: "Сломать одну половину поля конным превосходством и не ввязываться в долгую перестрелку центром.",
+          battalias: [
+            {
+              name: "Ударное крыло",
+              commander: "Принц Руперт",
+              commandRating: 9,
+              type: "horse",
+              units: [
+                heavyCavalryUnit("Кирасиры авангарда"),
+                heavyCavalryUnit("Кирасиры первой линии"),
+                lightCavalryUnit("Лёгкая конница прикрытия")
+              ]
+            },
+            {
+              name: "Резерв преследования",
+              commander: "Лорд Уилмот",
+              commandRating: 8,
+              type: "horse",
+              units: [
+                heavyCavalryUnit("Кирасиры резерва"),
+                lightCavalryUnit("Лёгкая конница преследования"),
+                dragoonUnit("Драгуны опорной рощи")
+              ]
+            },
+            {
+              name: "Пехотный якорь",
+              commander: "Сэр Джейкоб Астли",
+              commandRating: 7,
+              type: "foot",
+              units: [
+                pikeShotUnit("Пехота центра"),
+                pikeShotUnit("Пехота второй линии")
+              ]
+            }
+          ]
+        }
+      },
+      {
+        id: "balanced-army-3000",
+        sectionId: "large-scale",
+        name: "Сбалансированная армия",
+        theatre: "Универсальный большой формат",
+        summary: "Контроль центра, давление по всем направлениям и полноценная гибкость на всём поле.",
+        art: "./assets/arts/hero-battle.jpg",
+        artPosition: "center 38%",
+        army: {
+          name: "Сбалансированная армия",
+          objective: "Давить сразу несколько осей, не раскрываясь под один решающий вражеский удар.",
+          battalias: [
+            {
+              name: "Центральная линия",
+              commander: "Генерал армии",
+              commandRating: 8,
+              type: "foot",
+              units: [
+                pikeShotUnit("Пехота центра I"),
+                pikeShotUnit("Пехота центра II"),
+                pikeShotUnit("Пехота центра III"),
+                shotUnit("Шотта центра"),
+                mediumArtilleryUnit("Центральная батарея")
+              ]
+            },
+            {
+              name: "Поддержка и второй эшелон",
+              commander: "Командующий резервом",
+              commandRating: 8,
+              type: "mixed",
+              units: [
+                pikeShotUnit("Пехота второй линии I"),
+                pikeShotUnit("Пехота второй линии II"),
+                shotUnit("Шотта поддержки"),
+                dragoonUnit("Драгуны левого сектора"),
+                dragoonUnit("Драгуны правого сектора"),
+                lightArtilleryUnit("Полковое орудие")
+              ]
+            },
+            {
+              name: "Конное крыло",
+              commander: "Командующий конницей",
+              commandRating: 8,
+              type: "horse",
+              units: [
+                cavalryUnit("Конница первой линии"),
+                cavalryUnit("Конница второй линии"),
+                cavalryUnit("Конный резерв")
+              ]
+            }
+          ]
+        }
+      },
+      {
+        id: "artillery-army-3000",
+        sectionId: "large-scale",
+        name: "Артиллерийская армия",
+        theatre: "Оборонительный большой формат",
+        summary: "Огневое превосходство, батареи на главной оси и пехота, которая только удерживает нужную позицию.",
+        art: "./assets/unit-arts/artyl.jpg",
+        artPosition: "center 50%",
+        army: {
+          name: "Артиллерийская армия",
+          objective: "Ломать строй до контакта, навязывать противнику атаку в невыгодный коридор и отбивать её пиками.",
+          battalias: [
+            {
+              name: "Левая батарейная линия",
+              commander: "Мастер северного крыла",
+              commandRating: 8,
+              type: "mixed",
+              units: [
+                shotUnit("Шотта левого сектора"),
+                pikeShotUnit("Пехота прикрытия левого сектора"),
+                lightArtilleryUnit("Лёгкая батарея"),
+                dragoonUnit("Драгуны заставы")
+              ]
+            },
+            {
+              name: "Центр огня",
+              commander: "Главный артиллерист",
+              commandRating: 8,
+              type: "foot",
+              units: [
+                shotUnit("Шотта центра"),
+                pikeShotUnit("Пехота центра"),
+                mediumArtilleryUnit("Средняя батарея центра")
+              ]
+            },
+            {
+              name: "Правая линия и резерв",
+              commander: "Кап. южного фланга",
+              commandRating: 7,
+              type: "mixed",
+              units: [
+                shotUnit("Шотта правого сектора"),
+                pikeShotUnit("Пехота прикрытия правого сектора"),
+                mediumArtilleryUnit("Средняя батарея правого сектора"),
+                dragoonUnit("Драгуны правого фланга"),
+                cavalryUnit("Конный резерв")
+              ]
+            }
+          ]
+        }
+      },
+      {
+        id: "hammer-and-anvil-3000",
+        sectionId: "large-scale",
+        name: "Молот и наковальня",
+        theatre: "Ударный большой формат",
+        summary: "Пехота фиксирует фронт, а тяжёлая конница приходит во фланг и уничтожает уже связанный строй.",
+        art: "./assets/arts/scenario-cavalry.jpg",
+        artPosition: "center 42%",
+        army: {
+          name: "Молот и наковальня",
+          objective: "Заставить врага завязнуть в пехотном фронте и провести одну решающую серию конных ударов по флангу.",
+          battalias: [
+            {
+              name: "Левая наковальня",
+              commander: "Сэр Уильям Рид",
+              commandRating: 8,
+              type: "foot",
+              units: [
+                pikeShotUnit("Пехота левого центра I"),
+                pikeShotUnit("Пехота левого центра II"),
+                pikeShotUnit("Пехота левого центра III")
+              ]
+            },
+            {
+              name: "Правая наковальня",
+              commander: "Сэр Генри Блэйн",
+              commandRating: 8,
+              type: "mixed",
+              units: [
+                pikeShotUnit("Пехота правого центра I"),
+                pikeShotUnit("Пехота правого центра II"),
+                pikeShotUnit("Пехота правого центра III"),
+                mediumArtilleryUnit("Пушка поддержки")
+              ]
+            },
+            {
+              name: "Молот крыла",
+              commander: "Принц-кондотьер",
+              commandRating: 9,
+              type: "horse",
+              units: [
+                heavyCavalryUnit("Кирасиры первой линии"),
+                heavyCavalryUnit("Кирасиры второй линии"),
+                heavyCavalryUnit("Кирасиры резерва"),
+                heavyCavalryUnit("Кирасиры добивания"),
+                dragoonUnit("Драгуны сопровождения")
               ]
             }
           ]
@@ -824,7 +1092,7 @@
           <section class="army-preset-section" aria-labelledby="preset-section-${escapeAttribute(section.id)}">
             <div class="army-preset-section-header">
               <div>
-                <p class="panel-kicker">Тип столкновения</p>
+                <p class="panel-kicker">Масштаб боя</p>
                 <h3 id="preset-section-${escapeAttribute(section.id)}">${escapeHtml(section.label)}</h3>
               </div>
               <span class="meta-chip">${escapeHtml(section.pointsLabel)}</span>
