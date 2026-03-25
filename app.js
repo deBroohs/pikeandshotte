@@ -2705,9 +2705,6 @@
     ctx.lineWidth = 2;
     ctx.stroke();
 
-    ctx.fillStyle = palette.accent;
-    ctx.fillRect(x + 8, y + 8, 6, height - 16);
-
     ctx.fillStyle = "#241e19";
     ctx.font = `${Math.round(24 * density)}px Georgia`;
     ctx.textBaseline = "alphabetic";
