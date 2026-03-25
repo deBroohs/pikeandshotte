@@ -460,12 +460,14 @@ select {
 }
 
 .site-footer-bottom {
+  position: relative;
   background:
     linear-gradient(180deg, rgba(24, 22, 20, 0.98), rgba(18, 17, 15, 1));
   border-top: 1px solid rgba(255, 241, 219, 0.08);
 }
 
 .site-footer-bottom-inner {
+  position: relative;
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
@@ -499,19 +501,21 @@ select {
 }
 
 .site-footer-counter {
-  flex: 0 0 auto;
+  position: absolute;
+  right: 26px;
+  bottom: 12px;
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  margin-left: auto;
-  align-self: flex-end;
   opacity: 0.74;
+  pointer-events: none;
 }
 
 .site-footer-counter img {
   display: block;
-  height: 18px;
+  height: 16px;
   width: auto;
+  max-width: 96px;
   filter: saturate(0.72) brightness(0.92);
 }
 
@@ -2823,6 +2827,13 @@ select {
   .site-footer-bottom-inner {
     flex-direction: column;
     padding: 16px 18px 18px;
+  }
+
+  .site-footer-counter {
+    position: static;
+    margin-left: 0;
+    align-self: flex-end;
+    pointer-events: auto;
   }
 
   .utility-menu-inline {
