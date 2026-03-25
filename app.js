@@ -102,7 +102,7 @@
     return {
       turn: 1,
       activePhaseIndex: 0,
-      armyView: "builder",
+      armyView: "solo",
       soloArmyId: "blue",
       globalNotes: "",
       armies: {
@@ -540,7 +540,7 @@
     const nextState = createDefaultState();
     nextState.turn = 1;
     nextState.activePhaseIndex = 0;
-    nextState.armyView = "builder";
+    nextState.armyView = "solo";
 
     ["blue", "red"].forEach((armyId) => {
       const armyConfig = configuration[armyId];
@@ -957,7 +957,7 @@
 
     fresh.turn = Math.max(1, Number(candidate.turn) || 1);
     fresh.activePhaseIndex = Math.max(0, Math.min(data.phaseBlueprints.length - 1, Number(candidate.activePhaseIndex) || 0));
-    fresh.armyView = candidate.armyView === "game" || candidate.armyView === "solo" ? candidate.armyView : "builder";
+    fresh.armyView = candidate.armyView === "game" ? "game" : "solo";
     fresh.soloArmyId = candidate.soloArmyId === "red" ? "red" : "blue";
     fresh.globalNotes = String(candidate.globalNotes || "");
 
@@ -1145,13 +1145,13 @@
     if (workspaceKicker) {
       workspaceKicker.textContent = isGameView
         ? "Игровой стол"
-        : (isSoloView ? "Индивидуальная армия" : "Конструктор армии");
+        : "Армибилдер";
     }
 
     if (workspaceTitle) {
       workspaceTitle.textContent = isGameView
         ? "Игровые статусы, потери и состояние баталий"
-        : (isSoloView ? "Одна армия, её баталии и характеристики отрядов" : "Армии, баталии и характеристики отрядов");
+        : "Одна армия, её баталии и характеристики отрядов";
     }
 
     document.querySelectorAll(".armies-mode-button").forEach((button) => {
@@ -1515,7 +1515,7 @@
     const action = trigger.dataset.action;
     if (action === "set-army-view") {
       const nextView = trigger.dataset.armyView;
-      state.armyView = nextView === "game" || nextView === "solo" ? nextView : "builder";
+      state.armyView = nextView === "game" ? "game" : "solo";
       renderArmies();
       saveState();
       return;

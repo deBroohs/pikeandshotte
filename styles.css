@@ -2043,14 +2043,14 @@ select {
 .armies-mode-switch {
   grid-area: modes;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
   padding: 6px;
   border-radius: 999px;
   border: 1px solid rgba(84, 39, 20, 0.12);
   background: rgba(255, 250, 243, 0.72);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
-  width: min(100%, 560px);
+  width: min(100%, 420px);
   min-width: 0;
   justify-self: start;
 }

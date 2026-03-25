@@ -32,7 +32,7 @@
   <link rel="manifest" href="./site.webmanifest">
   <link rel="sitemap" type="application/xml" title="Sitemap" href="./sitemap.xml">
   <link rel="preload" href="./assets/arts/hero-battle.jpg" as="image" fetchpriority="high">
-  <link rel="stylesheet" href="./styles.css?v=20260325-8">
+  <link rel="stylesheet" href="./styles.css?v=20260325-9">
   <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -120,18 +120,15 @@
         <div class="armies-layout">
           <div class="armies-toolbar">
             <div class="armies-mode-switch" role="group" aria-label="Режим вкладки армии">
-              <button class="armies-mode-button is-active" type="button" data-action="set-army-view" data-army-view="builder" aria-pressed="true">
-                Конструктор армии
-              </button>
-              <button class="armies-mode-button" type="button" data-action="set-army-view" data-army-view="solo" aria-pressed="false">
-                Одна армия
+              <button class="armies-mode-button is-active" type="button" data-action="set-army-view" data-army-view="solo" aria-pressed="true">
+                Армибилдер
               </button>
               <button class="armies-mode-button" type="button" data-action="set-army-view" data-army-view="game" aria-pressed="false">
                 Игровой стол
               </button>
             </div>
 
-            <div id="solo-army-switch" class="solo-army-switch" hidden>
+            <div id="solo-army-switch" class="solo-army-switch">
               <button class="solo-army-button is-active" type="button" data-action="set-solo-army" data-army-id="blue" aria-pressed="true">
                 Синяя армия
               </button>
@@ -174,8 +171,8 @@
           <article class="panel army-workspace-panel">
             <div class="panel-header">
               <div>
-                <p id="army-workspace-kicker" class="panel-kicker">Конструктор армии</p>
-                <h2 id="army-workspace-title">Армии, баталии и характеристики отрядов</h2>
+                <p id="army-workspace-kicker" class="panel-kicker">Армибилдер</p>
+                <h2 id="army-workspace-title">Одна армия, её баталии и характеристики отрядов</h2>
               </div>
             </div>
             <div id="armies-grid" class="armies-grid"></div>
@@ -378,10 +375,8 @@
 
   <input id="import-file-input" type="file" accept="application/json" hidden>
 
-  <script src="./rules-data.js?v=20260325-8"></script>
-  <script src="./app.js?v=20260325-8"></script>
+  <script src="./rules-data.js?v=20260325-9"></script>
+  <script src="./app.js?v=20260325-9"></script>
 </body>
 </html>
-
-
 
