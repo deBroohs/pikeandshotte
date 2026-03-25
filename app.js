@@ -2501,22 +2501,11 @@
   }
 
   function renderArmyPdfCanvas(armyId, army) {
-    const width = 2200;
-    const height = 1556;
+    const width = 1654;
+    const height = 2339;
     const totalUnits = army.battalias.reduce((sum, battalia) => sum + battalia.units.length, 0);
     const battaliaCount = army.battalias.length;
     const points = getArmyPoints(army);
-    const density = getArmyPdfDensityFactor(battaliaCount, totalUnits);
-    const columns = getArmyPdfGridColumns(battaliaCount, totalUnits);
-    const rows = Math.max(1, Math.ceil(battaliaCount / columns));
-    const margin = 42;
-    const gap = Math.round(18 * density);
-    const headerHeight = Math.round(126 * density);
-    const footerHeight = 40;
-    const contentTop = margin + headerHeight + gap;
-    const contentHeight = height - contentTop - footerHeight - margin;
-    const boxWidth = Math.floor((width - margin * 2 - gap * (columns - 1)) / columns);
-    const boxHeight = Math.floor((contentHeight - gap * (rows - 1)) / rows);
     const palette = armyId === "red"
       ? {
           accent: "#8f3328",
@@ -2532,6 +2521,12 @@
           line: "#87aab8",
           bgGlow: "rgba(49, 92, 116, 0.16)"
         };
+    let density = getArmyPdfDensityFactor(battaliaCount, totalUnits);
+    let layout = buildArmyPdfLayout(army, width, height, density);
+    for (let index = 0; index < 7 && !layout.fits; index += 1) {
+      density *= 0.94;
+      layout = buildArmyPdfLayout(army, width, height, density);
+    }
 
     const canvas = document.createElement("canvas");
     canvas.width = width;
@@ -2544,14 +2539,14 @@
     ctx.fillStyle = bg;
     ctx.fillRect(0, 0, width, height);
 
-    const vignette = ctx.createRadialGradient(width * 0.92, height * 0.08, 40, width * 0.92, height * 0.08, width * 0.44);
+    const vignette = ctx.createRadialGradient(width * 0.86, height * 0.08, 40, width * 0.86, height * 0.08, width * 0.54);
     vignette.addColorStop(0, palette.bgGlow);
     vignette.addColorStop(1, "rgba(255,255,255,0)");
     ctx.fillStyle = vignette;
     ctx.fillRect(0, 0, width, height);
 
-    drawRoundedRect(ctx, margin, margin, width - margin * 2, headerHeight, 28);
-    const headerGradient = ctx.createLinearGradient(margin, margin, width - margin, margin + headerHeight);
+    drawRoundedRect(ctx, layout.margin, layout.margin, width - layout.margin * 2, layout.headerHeight, 26);
+    const headerGradient = ctx.createLinearGradient(layout.margin, layout.margin, width - layout.margin, layout.margin + layout.headerHeight);
     headerGradient.addColorStop(0, "#fffaf2");
     headerGradient.addColorStop(1, "#f0e4cf");
     ctx.fillStyle = headerGradient;
@@ -2561,23 +2556,23 @@
     ctx.stroke();
 
     ctx.fillStyle = "#2b241e";
-    ctx.font = `${Math.round(58 * density)}px Georgia`;
+    ctx.font = `${Math.round(50 * density)}px Georgia`;
     ctx.textBaseline = "alphabetic";
-    ctx.fillText(army.name, margin + 34, margin + Math.round(66 * density));
+    ctx.fillText(truncateTextToWidth(ctx, army.name, width - layout.margin * 2 - 360), layout.margin + 28, layout.margin + Math.round(56 * density));
 
     const metrics = [
       formatPointsValue(points),
       `${battaliaCount} бат.`,
       `${totalUnits} юн.`
     ];
-    let metricX = width - margin - 26;
-    const metricY = margin + Math.round(38 * density);
+    let metricX = width - layout.margin - 16;
+    const metricY = layout.margin + Math.round(26 * density);
     metrics.reverse().forEach((value) => {
-      ctx.font = `${Math.round(26 * density)}px Georgia`;
+      ctx.font = `${Math.round(24 * density)}px Georgia`;
       const textWidth = ctx.measureText(value).width;
-      const chipWidth = Math.ceil(textWidth + 34);
+      const chipWidth = Math.ceil(textWidth + 26);
       metricX -= chipWidth;
-      drawRoundedRect(ctx, metricX, metricY, chipWidth, Math.round(44 * density), 22);
+      drawRoundedRect(ctx, metricX, metricY, chipWidth, Math.round(36 * density), 18);
       ctx.fillStyle = "rgba(255, 252, 247, 0.92)";
       ctx.fill();
       ctx.strokeStyle = palette.line;
@@ -2586,48 +2581,88 @@
       ctx.fillStyle = palette.accentDeep;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.fillText(value, metricX + chipWidth / 2, metricY + Math.round(22 * density));
+      ctx.fillText(value, metricX + chipWidth / 2, metricY + Math.round(18 * density));
       ctx.textAlign = "left";
-      metricX -= 10;
+      metricX -= 8;
     });
 
-    army.battalias.forEach((battalia, index) => {
-      const column = index % columns;
-      const row = Math.floor(index / columns);
-      const x = margin + column * (boxWidth + gap);
-      const y = contentTop + row * (boxHeight + gap);
-      drawArmyPdfBattaliaCanvas(ctx, battalia, x, y, boxWidth, boxHeight, palette, density);
+    layout.placements.forEach((placement) => {
+      drawArmyPdfBattaliaCanvas(ctx, placement.battalia, placement.x, placement.y, placement.width, placement.height, palette, density);
     });
 
-    const footerY = height - margin - footerHeight;
-    drawRoundedRect(ctx, margin, footerY, width - margin * 2, footerHeight, 18);
-    const footerGradient = ctx.createLinearGradient(margin, footerY, width - margin, footerY);
+    const footerY = height - layout.margin - layout.footerHeight;
+    drawRoundedRect(ctx, layout.margin, footerY, width - layout.margin * 2, layout.footerHeight, 16);
+    const footerGradient = ctx.createLinearGradient(layout.margin, footerY, width - layout.margin, footerY);
     footerGradient.addColorStop(0, "#24201d");
     footerGradient.addColorStop(1, "#161311");
     ctx.fillStyle = footerGradient;
     ctx.fill();
 
     ctx.fillStyle = "rgba(243, 234, 220, 0.86)";
-    ctx.font = "20px 'Trebuchet MS'";
+    ctx.font = `${Math.round(16 * density)}px 'Trebuchet MS'`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText("Pike & Shotte War Room · debroohs.github.io/pikeandshotte · 1st Edition Companion", width / 2, footerY + footerHeight / 2 + 1);
+    ctx.fillText("Pike & Shotte War Room · debroohs.github.io/pikeandshotte · 1st Edition Companion", width / 2, footerY + layout.footerHeight / 2 + 1);
     ctx.textAlign = "left";
 
     return canvas;
   }
 
+  function buildArmyPdfLayout(army, width, height, density) {
+    const totalUnits = army.battalias.reduce((sum, battalia) => sum + battalia.units.length, 0);
+    const battaliaCount = army.battalias.length;
+    const margin = 42;
+    const gap = Math.max(10, Math.round(14 * density));
+    const headerHeight = Math.round(104 * density);
+    const footerHeight = Math.round(34 * density);
+    const columns = getArmyPdfGridColumns(battaliaCount, totalUnits);
+    const contentTop = margin + headerHeight + gap;
+    const contentBottom = height - margin - footerHeight - gap;
+    const boxWidth = Math.floor((width - margin * 2 - gap * (columns - 1)) / columns);
+    const columnHeights = Array(columns).fill(contentTop);
+    const placements = [];
+
+    army.battalias.forEach((battalia) => {
+      const boxHeight = estimateArmyPdfBattaliaHeight(battalia, density);
+      const columnIndex = columnHeights.reduce((bestIndex, current, index, values) => (current < values[bestIndex] ? index : bestIndex), 0);
+      const x = margin + columnIndex * (boxWidth + gap);
+      const y = columnHeights[columnIndex];
+      placements.push({ battalia, x, y, width: boxWidth, height: boxHeight });
+      columnHeights[columnIndex] += boxHeight + gap;
+    });
+
+    const maxBottom = Math.max(...columnHeights) - gap;
+    return {
+      margin,
+      gap,
+      headerHeight,
+      footerHeight,
+      placements,
+      fits: maxBottom <= contentBottom
+    };
+  }
+
+  function estimateArmyPdfBattaliaHeight(battalia, density) {
+    const units = battalia.units || [];
+    const rowMetrics = getArmyPdfRowMetrics(density, units.length);
+    const innerPad = Math.round(16 * density);
+    const battaliaHeaderHeight = Math.round(48 * density);
+    const tableHeaderHeight = Math.round(22 * density);
+    return innerPad * 2 + battaliaHeaderHeight + tableHeaderHeight + Math.max(1, units.length) * rowMetrics.height;
+  }
+
   function drawArmyPdfBattaliaCanvas(ctx, battalia, x, y, width, height, palette, density) {
-    const innerPad = Math.round(20 * density);
-    const headerHeight = Math.round(64 * density);
-    const tableHeaderHeight = Math.round(24 * density);
+    const units = battalia.units || [];
+    const rowMetrics = getArmyPdfRowMetrics(density, units.length);
+    const innerPad = Math.round(16 * density);
+    const headerHeight = Math.round(48 * density);
+    const tableHeaderHeight = Math.round(22 * density);
     const tableTop = y + innerPad + headerHeight;
     const tableBottom = y + height - innerPad;
     const tableHeight = Math.max(40, tableBottom - tableTop);
-    const units = battalia.units || [];
-    const rowHeight = Math.max(Math.round(22 * density), Math.floor((tableHeight - tableHeaderHeight) / Math.max(1, units.length || 1)));
+    const rowHeight = rowMetrics.height;
 
-    drawRoundedRect(ctx, x, y, width, height, 24);
+    drawRoundedRect(ctx, x, y, width, height, 18);
     const cardGradient = ctx.createLinearGradient(x, y, x + width, y + height);
     cardGradient.addColorStop(0, "#fffbf5");
     cardGradient.addColorStop(1, "#f4ebdc");
@@ -2638,26 +2673,26 @@
     ctx.stroke();
 
     ctx.fillStyle = palette.accent;
-    ctx.fillRect(x + 10, y + 10, 8, height - 20);
+    ctx.fillRect(x + 8, y + 8, 6, height - 16);
 
     ctx.fillStyle = "#241e19";
-    ctx.font = `${Math.round(31 * density)}px Georgia`;
+    ctx.font = `${Math.round(24 * density)}px Georgia`;
     ctx.textBaseline = "alphabetic";
-    ctx.fillText(truncateTextToWidth(ctx, battalia.name, width - innerPad * 2 - 220), x + innerPad, y + innerPad + Math.round(24 * density));
+    ctx.fillText(truncateTextToWidth(ctx, battalia.name, width - innerPad * 2 - 170), x + innerPad, y + innerPad + Math.round(20 * density));
 
     ctx.fillStyle = "#6b5c4c";
-    ctx.font = `${Math.round(17 * density)}px 'Trebuchet MS'`;
+    ctx.font = `${Math.round(13 * density)}px 'Trebuchet MS'`;
     const commanderLine = battalia.commander
       ? `${formatBattaliaType(battalia.type)} · ${battalia.commander} · CR ${battalia.commandRating}`
       : `${formatBattaliaType(battalia.type)} · CR ${battalia.commandRating}`;
-    ctx.fillText(truncateTextToWidth(ctx, commanderLine, width - innerPad * 2 - 180), x + innerPad, y + innerPad + Math.round(47 * density));
+    ctx.fillText(truncateTextToWidth(ctx, commanderLine, width - innerPad * 2 - 140), x + innerPad, y + innerPad + Math.round(37 * density));
 
     const points = formatPointsValue(getBattaliaPoints(battalia));
     const unitsLabel = `${units.length} юн.`;
-    drawPdfMetaChip(ctx, x + width - innerPad - 112, y + innerPad - 4, 112, Math.round(26 * density), unitsLabel, palette);
-    drawPdfMetaChip(ctx, x + width - innerPad - 112, y + innerPad + Math.round(28 * density), 112, Math.round(26 * density), points, palette);
+    drawPdfMetaChip(ctx, x + width - innerPad - 96, y + innerPad - 2, 96, Math.round(20 * density), unitsLabel, palette, density);
+    drawPdfMetaChip(ctx, x + width - innerPad - 96, y + innerPad + Math.round(22 * density), 96, Math.round(20 * density), points, palette, density);
 
-    drawRoundedRect(ctx, x + innerPad, tableTop, width - innerPad * 2, tableHeight, 16);
+    drawRoundedRect(ctx, x + innerPad, tableTop, width - innerPad * 2, tableHeight, 12);
     ctx.fillStyle = "rgba(255,255,255,0.46)";
     ctx.fill();
 
@@ -2690,7 +2725,7 @@
     ctx.stroke();
 
     ctx.fillStyle = "#6b5c4c";
-    ctx.font = `${Math.round(13 * density)}px 'Trebuchet MS'`;
+    ctx.font = `${Math.round(11 * density)}px 'Trebuchet MS'`;
     ctx.textBaseline = "middle";
     columns.forEach((column, index) => {
       const col = colXs[index];
@@ -2706,7 +2741,7 @@
     if (!units.length) {
       ctx.textAlign = "left";
       ctx.fillStyle = "#7c6e60";
-      ctx.font = `${Math.round(18 * density)}px Georgia`;
+      ctx.font = `${Math.round(14 * density)}px Georgia`;
       ctx.fillText("В баталии пока нет юнитов.", x + innerPad + 12, tableTop + tableHeaderHeight + 36);
       return;
     }
@@ -2720,32 +2755,31 @@
         ctx.stroke();
       }
 
-      drawArmyPdfUnitRow(ctx, unit, rowY, rowHeight, colXs, density);
+      drawArmyPdfUnitRow(ctx, unit, rowY, rowHeight, colXs, rowMetrics, density);
     });
   }
 
-  function drawArmyPdfUnitRow(ctx, unit, rowY, rowHeight, colXs, density) {
+  function drawArmyPdfUnitRow(ctx, unit, rowY, rowHeight, colXs, rowMetrics, density) {
     const nameCell = colXs[0];
     const detail = [
       formatCategory(unit.category),
       formatFormation(unit.formation),
       compactPrintText(unit.armament || "", 34)
     ].filter(Boolean).join(" · ");
-    const compact = rowHeight < Math.round(30 * density);
 
     ctx.textAlign = "left";
     ctx.textBaseline = "alphabetic";
     ctx.fillStyle = "#251f1a";
-    ctx.font = `${compact ? Math.round(13 * density) : Math.round(15 * density)}px Georgia`;
+    ctx.font = `${Math.round(rowMetrics.nameFont)}px Georgia`;
 
-    if (compact) {
-      const singleLine = truncateTextToWidth(ctx, `${unit.name} — ${detail}`, nameCell.width - 14);
-      ctx.fillText(singleLine, nameCell.x + 8, rowY + rowHeight / 2 + 5);
+    if (rowMetrics.compact) {
+      const singleLine = truncateTextToWidth(ctx, `${unit.name} · ${detail}`, nameCell.width - 14);
+      ctx.fillText(singleLine, nameCell.x + 8, rowY + rowHeight / 2 + 4);
     } else {
-      ctx.fillText(truncateTextToWidth(ctx, unit.name, nameCell.width - 14), nameCell.x + 8, rowY + Math.round(17 * density));
+      ctx.fillText(truncateTextToWidth(ctx, unit.name, nameCell.width - 14), nameCell.x + 8, rowY + Math.round(15 * density));
       ctx.fillStyle = "#6b5c4c";
-      ctx.font = `${Math.round(10.5 * density)}px 'Trebuchet MS'`;
-      ctx.fillText(truncateTextToWidth(ctx, detail, nameCell.width - 14), nameCell.x + 8, rowY + Math.max(rowHeight - 8, Math.round(31 * density)));
+      ctx.font = `${Math.round(rowMetrics.detailFont)}px 'Trebuchet MS'`;
+      ctx.fillText(truncateTextToWidth(ctx, detail, nameCell.width - 14), nameCell.x + 8, rowY + rowHeight - Math.round(6 * density));
     }
 
     const values = [
@@ -2759,7 +2793,7 @@
     ];
 
     ctx.fillStyle = "#2a231d";
-    ctx.font = `${Math.round(12.5 * density)}px Georgia`;
+    ctx.font = `${Math.round(rowMetrics.valueFont)}px Georgia`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     values.forEach((value, index) => {
@@ -2769,7 +2803,7 @@
     ctx.textAlign = "left";
   }
 
-  function drawPdfMetaChip(ctx, x, y, width, height, label, palette) {
+  function drawPdfMetaChip(ctx, x, y, width, height, label, palette, density) {
     drawRoundedRect(ctx, x, y, width, height, height / 2);
     ctx.fillStyle = "rgba(255,252,247,0.9)";
     ctx.fill();
@@ -2777,7 +2811,7 @@
     ctx.lineWidth = 2;
     ctx.stroke();
     ctx.fillStyle = palette.accentDeep;
-    ctx.font = "600 14px 'Trebuchet MS'";
+    ctx.font = `600 ${Math.round(11 * density)}px 'Trebuchet MS'`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText(label, x + width / 2, y + height / 2 + 1);
@@ -2785,11 +2819,11 @@
   }
 
   function getArmyPdfDensityFactor(battaliaCount, totalUnits) {
-    if (totalUnits >= 16 || battaliaCount >= 5) {
+    if (totalUnits >= 18 || battaliaCount >= 5) {
       return 0.82;
     }
-    if (totalUnits >= 10 || battaliaCount >= 3) {
-      return 0.9;
+    if (totalUnits >= 12 || battaliaCount >= 3) {
+      return 0.92;
     }
     return 1;
   }
@@ -2798,10 +2832,31 @@
     if (battaliaCount === 1) {
       return 1;
     }
-    if (battaliaCount >= 5 || totalUnits >= 15) {
-      return 3;
+    if (battaliaCount >= 3 || totalUnits >= 8) {
+      return 2;
     }
-    return 2;
+    return 1;
+  }
+
+  function getArmyPdfRowMetrics(density, unitCount) {
+    const compact = density < 0.9 || unitCount >= 5;
+    if (compact) {
+      return {
+        compact: true,
+        height: Math.round(22 * density),
+        nameFont: 12.2 * density,
+        detailFont: 0,
+        valueFont: 11.6 * density
+      };
+    }
+
+    return {
+      compact: false,
+      height: Math.round(28 * density),
+      nameFont: 13.8 * density,
+      detailFont: 9.2 * density,
+      valueFont: 11.8 * density
+    };
   }
 
   function compactPrintText(value, maxLength) {
@@ -2862,8 +2917,8 @@
   }
 
   function buildSinglePagePdfFromJpeg(jpegBytes, imageWidth, imageHeight) {
-    const pageWidth = 841.89;
-    const pageHeight = 595.28;
+    const pageWidth = 595.28;
+    const pageHeight = 841.89;
     const encoder = new TextEncoder();
     const parts = [];
     const offsets = [0];
