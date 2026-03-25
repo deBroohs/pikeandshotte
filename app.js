@@ -2521,17 +2521,18 @@
           line: "#87aab8",
           bgGlow: "rgba(49, 92, 116, 0.16)"
         };
-    let density = getArmyPdfDensityFactor(battaliaCount, totalUnits);
-    let layout = buildArmyPdfLayout(army, width, height, density);
-    for (let index = 0; index < 7 && !layout.fits; index += 1) {
-      density *= 0.94;
-      layout = buildArmyPdfLayout(army, width, height, density);
-    }
 
     const canvas = document.createElement("canvas");
     canvas.width = width;
     canvas.height = height;
     const ctx = canvas.getContext("2d");
+
+    let density = getArmyPdfDensityFactor(battaliaCount, totalUnits);
+    let layout = buildArmyPdfLayout(army, width, height, density, ctx);
+    for (let index = 0; index < 7 && !layout.fits; index += 1) {
+      density *= 0.94;
+      layout = buildArmyPdfLayout(army, width, height, density, ctx);
+    }
 
     const bg = ctx.createLinearGradient(0, 0, width, height);
     bg.addColorStop(0, "#f7f0e2");
@@ -2556,7 +2557,7 @@
     ctx.stroke();
 
     ctx.fillStyle = "#2b241e";
-    ctx.font = `${Math.round(50 * density)}px Georgia`;
+    ctx.font = `${Math.round(54 * density)}px Georgia`;
     ctx.textBaseline = "alphabetic";
     ctx.fillText(truncateTextToWidth(ctx, army.name, width - layout.margin * 2 - 360), layout.margin + 28, layout.margin + Math.round(56 * density));
 
@@ -2587,7 +2588,7 @@
     });
 
     layout.placements.forEach((placement) => {
-      drawArmyPdfBattaliaCanvas(ctx, placement.battalia, placement.x, placement.y, placement.width, placement.height, palette, density);
+      drawArmyPdfBattaliaCanvas(ctx, placement, palette, density);
     });
 
     const footerY = height - layout.margin - layout.footerHeight;
@@ -2608,13 +2609,13 @@
     return canvas;
   }
 
-  function buildArmyPdfLayout(army, width, height, density) {
+  function buildArmyPdfLayout(army, width, height, density, ctx) {
     const totalUnits = army.battalias.reduce((sum, battalia) => sum + battalia.units.length, 0);
     const battaliaCount = army.battalias.length;
-    const margin = 42;
-    const gap = Math.max(10, Math.round(14 * density));
-    const headerHeight = Math.round(104 * density);
-    const footerHeight = Math.round(34 * density);
+    const margin = 34;
+    const gap = Math.max(8, Math.round(12 * density));
+    const headerHeight = Math.round(94 * density);
+    const footerHeight = Math.round(30 * density);
     const columns = getArmyPdfGridColumns(battaliaCount, totalUnits);
     const contentTop = margin + headerHeight + gap;
     const contentBottom = height - margin - footerHeight - gap;
@@ -2623,12 +2624,12 @@
     const placements = [];
 
     army.battalias.forEach((battalia) => {
-      const boxHeight = estimateArmyPdfBattaliaHeight(battalia, density);
+      const boxLayout = measureArmyPdfBattaliaLayout(battalia, boxWidth, density, ctx);
       const columnIndex = columnHeights.reduce((bestIndex, current, index, values) => (current < values[bestIndex] ? index : bestIndex), 0);
       const x = margin + columnIndex * (boxWidth + gap);
       const y = columnHeights[columnIndex];
-      placements.push({ battalia, x, y, width: boxWidth, height: boxHeight });
-      columnHeights[columnIndex] += boxHeight + gap;
+      placements.push({ battalia, x, y, width: boxWidth, height: boxLayout.height, layout: boxLayout });
+      columnHeights[columnIndex] += boxLayout.height + gap;
     });
 
     const maxBottom = Math.max(...columnHeights) - gap;
@@ -2642,25 +2643,57 @@
     };
   }
 
-  function estimateArmyPdfBattaliaHeight(battalia, density) {
+  function measureArmyPdfBattaliaLayout(battalia, width, density, ctx) {
     const units = battalia.units || [];
     const rowMetrics = getArmyPdfRowMetrics(density, units.length);
-    const innerPad = Math.round(16 * density);
-    const battaliaHeaderHeight = Math.round(48 * density);
-    const tableHeaderHeight = Math.round(22 * density);
-    return innerPad * 2 + battaliaHeaderHeight + tableHeaderHeight + Math.max(1, units.length) * rowMetrics.height;
+    const innerPad = Math.round(12 * density);
+    const battaliaHeaderHeight = Math.round(42 * density);
+    const tableHeaderHeight = Math.round(18 * density);
+    const tableWidth = width - innerPad * 2;
+    const nameCellWidth = tableWidth * 0.58;
+    const rows = units.map((unit) => measureArmyPdfUnitRow(unit, nameCellWidth, rowMetrics, ctx));
+    const rowsHeight = rows.length ? rows.reduce((sum, row) => sum + row.height, 0) : Math.round(32 * density);
+    return {
+      innerPad,
+      battaliaHeaderHeight,
+      tableHeaderHeight,
+      tableWidth,
+      rowMetrics,
+      rows,
+      height: innerPad * 2 + battaliaHeaderHeight + tableHeaderHeight + rowsHeight
+    };
   }
 
-  function drawArmyPdfBattaliaCanvas(ctx, battalia, x, y, width, height, palette, density) {
+  function measureArmyPdfUnitRow(unit, nameCellWidth, rowMetrics, ctx) {
+    const nameLines = wrapTextToWidth(ctx, unit.name, nameCellWidth - 14, `${Math.round(rowMetrics.nameFont)}px Georgia`);
+    const primaryLine = `${formatCategory(unit.category)} · ${formatFormation(unit.formation)}`;
+    const primaryLines = wrapTextToWidth(ctx, primaryLine, nameCellWidth - 14, `${Math.round(rowMetrics.detailFont)}px 'Trebuchet MS'`);
+    const armamentLines = wrapTextToWidth(ctx, String(unit.armament || ""), nameCellWidth - 14, `${Math.round(rowMetrics.detailFont)}px 'Trebuchet MS'`);
+    const detailLines = [...primaryLines, ...armamentLines];
+    const nameCount = Math.max(1, nameLines.length);
+    const detailCount = Math.max(1, detailLines.length);
+    const height = Math.round(
+      rowMetrics.paddingTop
+      + nameCount * rowMetrics.nameLineHeight
+      + detailCount * rowMetrics.detailLineHeight
+      + rowMetrics.paddingBottom
+    );
+
+    return {
+      unit,
+      nameLines,
+      detailLines,
+      height
+    };
+  }
+
+  function drawArmyPdfBattaliaCanvas(ctx, placement, palette, density) {
+    const { battalia, x, y, width, height, layout } = placement;
     const units = battalia.units || [];
-    const rowMetrics = getArmyPdfRowMetrics(density, units.length);
-    const innerPad = Math.round(16 * density);
-    const headerHeight = Math.round(48 * density);
-    const tableHeaderHeight = Math.round(22 * density);
+    const { innerPad, battaliaHeaderHeight: headerHeight, tableHeaderHeight, rowMetrics, rows } = layout;
     const tableTop = y + innerPad + headerHeight;
     const tableBottom = y + height - innerPad;
     const tableHeight = Math.max(40, tableBottom - tableTop);
-    const rowHeight = rowMetrics.height;
 
     drawRoundedRect(ctx, x, y, width, height, 18);
     const cardGradient = ctx.createLinearGradient(x, y, x + width, y + height);
@@ -2697,14 +2730,14 @@
     ctx.fill();
 
     const columns = [
-      { label: "Юнит", ratio: 0.50, align: "left" },
-      { label: "M", ratio: 0.0714, align: "center" },
-      { label: "Sh", ratio: 0.0714, align: "center" },
-      { label: "R", ratio: 0.0714, align: "center" },
-      { label: "Ml", ratio: 0.0714, align: "center" },
-      { label: "Mor", ratio: 0.0714, align: "center" },
-      { label: "St", ratio: 0.0714, align: "center" },
-      { label: "Pts", ratio: 0.0716, align: "center" }
+      { label: "Юнит", ratio: 0.58, align: "left" },
+      { label: "M", ratio: 0.055, align: "center" },
+      { label: "Sh", ratio: 0.06, align: "center" },
+      { label: "R", ratio: 0.07, align: "center" },
+      { label: "Ml", ratio: 0.055, align: "center" },
+      { label: "Mor", ratio: 0.065, align: "center" },
+      { label: "St", ratio: 0.05, align: "center" },
+      { label: "Pts", ratio: 0.065, align: "center" }
     ];
     const tableWidth = width - innerPad * 2;
     const colXs = [];
@@ -2746,41 +2779,40 @@
       return;
     }
 
-    units.forEach((unit, index) => {
-      const rowY = tableTop + tableHeaderHeight + index * rowHeight;
-      if (index < units.length - 1) {
+    let rowY = tableTop + tableHeaderHeight;
+    rows.forEach((row, index) => {
+      if (index < rows.length - 1) {
         ctx.beginPath();
-        ctx.moveTo(x + innerPad, rowY + rowHeight);
-        ctx.lineTo(x + innerPad + tableWidth, rowY + rowHeight);
+        ctx.moveTo(x + innerPad, rowY + row.height);
+        ctx.lineTo(x + innerPad + tableWidth, rowY + row.height);
         ctx.stroke();
       }
 
-      drawArmyPdfUnitRow(ctx, unit, rowY, rowHeight, colXs, rowMetrics, density);
+      drawArmyPdfUnitRow(ctx, row, rowY, colXs, rowMetrics, density);
+      rowY += row.height;
     });
   }
 
-  function drawArmyPdfUnitRow(ctx, unit, rowY, rowHeight, colXs, rowMetrics, density) {
+  function drawArmyPdfUnitRow(ctx, row, rowY, colXs, rowMetrics, density) {
+    const { unit, nameLines, detailLines, height: rowHeight } = row;
     const nameCell = colXs[0];
-    const detail = [
-      formatCategory(unit.category),
-      formatFormation(unit.formation),
-      compactPrintText(unit.armament || "", 34)
-    ].filter(Boolean).join(" · ");
 
     ctx.textAlign = "left";
     ctx.textBaseline = "alphabetic";
     ctx.fillStyle = "#251f1a";
     ctx.font = `${Math.round(rowMetrics.nameFont)}px Georgia`;
 
-    if (rowMetrics.compact) {
-      const singleLine = truncateTextToWidth(ctx, `${unit.name} · ${detail}`, nameCell.width - 14);
-      ctx.fillText(singleLine, nameCell.x + 8, rowY + rowHeight / 2 + 4);
-    } else {
-      ctx.fillText(truncateTextToWidth(ctx, unit.name, nameCell.width - 14), nameCell.x + 8, rowY + Math.round(15 * density));
-      ctx.fillStyle = "#6b5c4c";
-      ctx.font = `${Math.round(rowMetrics.detailFont)}px 'Trebuchet MS'`;
-      ctx.fillText(truncateTextToWidth(ctx, detail, nameCell.width - 14), nameCell.x + 8, rowY + rowHeight - Math.round(6 * density));
-    }
+    nameLines.forEach((line, index) => {
+      const y = rowY + rowMetrics.paddingTop + (index + 1) * rowMetrics.nameLineHeight - 2;
+      ctx.fillText(line, nameCell.x + 8, y);
+    });
+
+    ctx.fillStyle = "#6b5c4c";
+    ctx.font = `${Math.round(rowMetrics.detailFont)}px 'Trebuchet MS'`;
+    detailLines.forEach((line, index) => {
+      const y = rowY + rowMetrics.paddingTop + nameLines.length * rowMetrics.nameLineHeight + (index + 1) * rowMetrics.detailLineHeight - 2;
+      ctx.fillText(line, nameCell.x + 8, y);
+    });
 
     const values = [
       unit.move || "—",
@@ -2820,10 +2852,10 @@
 
   function getArmyPdfDensityFactor(battaliaCount, totalUnits) {
     if (totalUnits >= 18 || battaliaCount >= 5) {
-      return 0.82;
+      return 0.9;
     }
     if (totalUnits >= 12 || battaliaCount >= 3) {
-      return 0.92;
+      return 0.97;
     }
     return 1;
   }
@@ -2839,23 +2871,14 @@
   }
 
   function getArmyPdfRowMetrics(density, unitCount) {
-    const compact = density < 0.9 || unitCount >= 5;
-    if (compact) {
-      return {
-        compact: true,
-        height: Math.round(22 * density),
-        nameFont: 12.2 * density,
-        detailFont: 0,
-        valueFont: 11.6 * density
-      };
-    }
-
     return {
-      compact: false,
-      height: Math.round(28 * density),
-      nameFont: 13.8 * density,
-      detailFont: 9.2 * density,
-      valueFont: 11.8 * density
+      nameFont: unitCount >= 6 ? 15.4 * density : 16.8 * density,
+      detailFont: unitCount >= 6 ? 11.6 * density : 12.8 * density,
+      valueFont: unitCount >= 6 ? 13.2 * density : 14.2 * density,
+      nameLineHeight: Math.round((unitCount >= 6 ? 20 : 22) * density),
+      detailLineHeight: Math.round((unitCount >= 6 ? 15 : 16) * density),
+      paddingTop: Math.round(5 * density),
+      paddingBottom: Math.round(5 * density)
     };
   }
 
@@ -2868,6 +2891,41 @@
       return clean;
     }
     return `${clean.slice(0, Math.max(0, maxLength - 1)).trimEnd()}…`;
+  }
+
+  function wrapTextToWidth(ctx, text, maxWidth, font) {
+    const value = String(text || "").replace(/\s+/g, " ").trim();
+    if (!value) {
+      return [];
+    }
+
+    const previousFont = ctx.font;
+    if (font) {
+      ctx.font = font;
+    }
+
+    const words = value.split(" ");
+    const lines = [];
+    let current = words.shift() || "";
+
+    words.forEach((word) => {
+      const candidate = current ? `${current} ${word}` : word;
+      if (ctx.measureText(candidate).width <= maxWidth) {
+        current = candidate;
+      } else {
+        if (current) {
+          lines.push(current);
+        }
+        current = word;
+      }
+    });
+
+    if (current) {
+      lines.push(current);
+    }
+
+    ctx.font = previousFont;
+    return lines;
   }
 
   function truncateTextToWidth(ctx, text, maxWidth) {
