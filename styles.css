@@ -400,8 +400,8 @@ select {
 
 .site-footer-main {
   display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.95fr);
-  gap: 28px;
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
   padding: 34px 26px 30px;
 }
 
@@ -412,7 +412,10 @@ select {
 }
 
 .site-footer-brand {
-  padding-right: 16px;
+  max-width: 880px;
+  padding-right: 0;
+  justify-items: center;
+  text-align: center;
 }
 
 .site-footer-column h2,
