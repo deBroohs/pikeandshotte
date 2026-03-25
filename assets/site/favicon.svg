@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="title desc">
+  <title id="title">Pike &amp; Shotte War Room</title>
+  <desc id="desc">Shield emblem with crossed pikes for the Pike &amp; Shotte companion site.</desc>
+  <defs>
+    <linearGradient id="shield" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f8f0dd" />
+      <stop offset="100%" stop-color="#e1c89f" />
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8f3127" />
+      <stop offset="100%" stop-color="#5e1f19" />
+    </linearGradient>
+    <linearGradient id="steel" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#466e83" />
+      <stop offset="100%" stop-color="#23493d" />
+    </linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="52" fill="#eadfc8" />
+  <path d="M128 26 198 54v62c0 47-27 89-70 114-43-25-70-67-70-114V54Z" fill="url(#shield)" stroke="#7a3b1f" stroke-width="8" />
+  <path d="M92 54 160 182" stroke="url(#steel)" stroke-width="10" stroke-linecap="round" />
+  <path d="M164 54 96 182" stroke="url(#steel)" stroke-width="10" stroke-linecap="round" />
+  <path d="m86 44 8-18 8 18-8 10Z" fill="#1f1e1a" />
+  <path d="m154 44 8-18 8 18-8 10Z" fill="#1f1e1a" />
+  <circle cx="128" cy="116" r="32" fill="url(#accent)" stroke="#f8f0dd" stroke-width="7" />
+  <path d="M108 128h40v12h-40z" fill="#f8f0dd" />
+  <path d="M122 96h12v64h-12z" fill="#f8f0dd" />
+</svg>

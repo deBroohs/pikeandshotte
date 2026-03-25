@@ -1,5 +1,6 @@
 .edge-headless/
 .edge-test-profile/
+node_modules/
 tmp-*.txt
 Thumbs.db
 Desktop.ini

@@ -1,0 +1,16 @@
+{
+  "name": "pikeandshotte-war-room",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Static site toolkit and production metadata for the Pike & Shotte War Room.",
+  "scripts": {
+    "build:site": "node tools/build-site.mjs",
+    "check": "node --check app.js && node --check rules-data.js && node tools/check-site.mjs",
+    "dev": "node tools/serve.mjs",
+    "prepare:site": "node tools/build-site.mjs && npm run check"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

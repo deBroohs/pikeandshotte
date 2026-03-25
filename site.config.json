@@ -1,0 +1,29 @@
+{
+  "siteName": "Pike & Shotte War Room",
+  "shortName": "War Room",
+  "title": "Pike & Shotte War Room",
+  "titleSuffix": "Wargame Companion",
+  "description": "Штабной companion для Pike & Shotte: фазы хода, конструктор армий, карточки отрядов, стоимость составов и справочник правил 1-й редакции.",
+  "shortDescription": "Компаньон для Pike & Shotte: ход партии, армии, отряды и справочник правил.",
+  "siteUrl": "https://debroohs.github.io/pikeandshotte/",
+  "lang": "ru",
+  "locale": "ru_RU",
+  "themeColor": "#e9dec8",
+  "backgroundColor": "#e9dec8",
+  "author": "deBroohs",
+  "ogImage": "assets/arts/hero-battle.jpg",
+  "keywords": [
+    "Pike & Shotte",
+    "Pike and Shotte",
+    "wargame",
+    "army builder",
+    "battalia",
+    "tabletop",
+    "rulebook companion"
+  ],
+  "categories": [
+    "games",
+    "productivity",
+    "utilities"
+  ]
+}

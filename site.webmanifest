@@ -1,0 +1,25 @@
+{
+  "name": "Pike & Shotte War Room",
+  "short_name": "War Room",
+  "description": "Штабной companion для Pike & Shotte: фазы хода, конструктор армий, карточки отрядов, стоимость составов и справочник правил 1-й редакции.",
+  "lang": "ru",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#e9dec8",
+  "background_color": "#e9dec8",
+  "categories": [
+    "games",
+    "productivity",
+    "utilities"
+  ],
+  "icons": [
+    {
+      "src": "./assets/site/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://debroohs.github.io/pikeandshotte/sitemap.xml
