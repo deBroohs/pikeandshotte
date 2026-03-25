@@ -2,6 +2,7 @@
   const STORAGE_KEY = "pike-shotte-field-companion-v1";
   const data = window.PikeShotteData;
   const specialRuleLookup = buildSpecialRuleLookup();
+  const armyPresetSections = getArmyPresetSections();
   const armyPresets = getArmyPresets();
   const unitArtLookup = {
     "pike-block": "./assets/unit-arts/pike-block.jpg",
@@ -598,14 +599,146 @@
     return ["blue", "red"].some((armyId) => state.armies[armyId].battalias.length > 0);
   }
 
+  function getArmyPresetSections() {
+    return [
+      {
+        id: "small-engagements",
+        label: "Малые столкновения",
+        pointsLabel: "120-180 pts",
+        description: "Передовые отряды, рейды, горные вылазки и быстрые бои за подходы."
+      },
+      {
+        id: "field-battles",
+        label: "Стандартное полевое сражение",
+        pointsLabel: "180-260 pts",
+        description: "Сбалансированные армии для основной партии по системе очков из рульбука."
+      },
+      {
+        id: "decisive-assaults",
+        label: "Решающий удар и прорыв",
+        pointsLabel: "240-320 pts",
+        description: "Более тяжёлые сборки под сильный фланг, плотный центр или вторую линию."
+      },
+      {
+        id: "late-linear-war",
+        label: "Поздняя линейная война",
+        pointsLabel: "260-360 pts",
+        description: "Поздний период с firelocks, first fire и более стройной огневой линией."
+      }
+    ];
+  }
+
   function getArmyPresets() {
     return [
       {
+        id: "irish-raiding-host",
+        sectionId: "small-engagements",
+        name: "Ирландский рейдовый хост",
+        theatre: "Тюдоровская война на Британских островах",
+        summary: "Лёгкая и неудобная для поимки сила: варбанды, налётная конница и давление на фланг.",
+        tags: ["малый бой", "рейд", "иррегуляры"],
+        army: {
+          name: "Ирландский рейдовый хост",
+          objective: "Растянуть строй противника, занять трудную местность и ударить варбандами по изолированному участку.",
+          battalias: [
+            {
+              name: "Галлоглассы удара",
+              commander: "О'Доннелл",
+              commandRating: 8,
+              type: "foot",
+              units: [
+                { templateId: "highland-warband", name: "Галлоглассы центра" },
+                { templateId: "highland-warband", name: "Керны первой волны", notes: "Идут на короткий решающий бросок по уже расстроенной цели." }
+              ]
+            },
+            {
+              name: "Конные керны",
+              commander: "Макмахон",
+              commandRating: 7,
+              type: "horse",
+              units: [
+                { templateId: "light-cavalry", name: "Конные керны" },
+                { templateId: "dragoons", name: "Стрелки на пони" }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        id: "polish-banner",
+        sectionId: "small-engagements",
+        name: "Польская хоругвь",
+        theatre: "Тридцатилетняя война",
+        summary: "Быстрая ударная конница с копьями и лёгким экраном для флангового боя.",
+        tags: ["малый бой", "конный удар", "манёвр"],
+        army: {
+          name: "Польская хоругвь",
+          objective: "Давить пространство разъездами и нанести один чистый удар копейной конницей в расстроенный строй.",
+          battalias: [
+            {
+              name: "Гусарская хоругвь",
+              commander: "Пан Любомирский",
+              commandRating: 8,
+              type: "horse",
+              units: [
+                { templateId: "lancers", name: "Крылатые гусары" },
+                { templateId: "cavalry", name: "Панцирная хоругвь" }
+              ]
+            },
+            {
+              name: "Экран и разъезды",
+              commander: "Ротмистр Завадский",
+              commandRating: 7,
+              type: "horse",
+              units: [
+                { templateId: "light-cavalry", name: "Лёгкая хоругвь" },
+                { templateId: "dragoons", name: "Конные стрелки" }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        id: "montrose-highland-host",
+        sectionId: "small-engagements",
+        name: "Горский корпус Монтроза",
+        theatre: "Английская гражданская война",
+        summary: "Армия короткой дистанции: горцы на прорыв, немного конницы и резкая атака на одном участке.",
+        tags: ["малый бой", "горцы", "прорыв"],
+        army: {
+          name: "Горский корпус Монтроза",
+          objective: "Сломать один участок линии яростным броском и не дать противнику выиграть перестрелкой.",
+          battalias: [
+            {
+              name: "Горский кулак",
+              commander: "Маркиз Монтроз",
+              commandRating: 8,
+              type: "foot",
+              units: [
+                { templateId: "highland-warband", name: "Клан Кэмеронов" },
+                { templateId: "highland-warband", name: "Клан Макдональдов" }
+              ]
+            },
+            {
+              name: "Конный заслон",
+              commander: "Аласдер Макколла",
+              commandRating: 7,
+              type: "horse",
+              units: [
+                { templateId: "light-cavalry", name: "Горская конница" },
+                { templateId: "dragoons", name: "Стрелки Монтроза" }
+              ]
+            }
+          ]
+        }
+      },
+      {
         id: "ecw-parliament",
+        sectionId: "field-battles",
         name: "Парламентская полевая армия",
         theatre: "Английская гражданская война",
         summary: "Классический строевой состав: пехотный центр, конное крыло, драгуны и батарея поддержки.",
-        tags: ["ECW", "линейная армия", "пики и огонь"],
+        tags: ["полевое сражение", "линия", "пики и огонь"],
         army: {
           name: "Парламентская полевая армия",
           objective: "Удерживать центр огнём и пикировать контрударом только после расстройства вражеской линии.",
@@ -654,10 +787,11 @@
       },
       {
         id: "ecw-royalist",
+        sectionId: "decisive-assaults",
         name: "Роялистский ударный корпус",
         theatre: "Английская гражданская война",
         summary: "Более агрессивный состав с сильной ударной конницей и компактным пехотным центром.",
-        tags: ["ECW", "агрессия", "удар конницы"],
+        tags: ["прорыв", "удар конницы", "агрессия"],
         army: {
           name: "Роялистский ударный корпус",
           objective: "Разбить одно крыло стремительным ударом конницы и добить потрясённый центр до затяжной перестрелки.",
@@ -697,10 +831,11 @@
       },
       {
         id: "swedish-brigade",
+        sectionId: "field-battles",
         name: "Шведская бригада",
         theatre: "Тридцатилетняя война",
         summary: "Более подвижная армия с бригадами линейной пехоты, гибкой конницей и лёгким манёвром.",
-        tags: ["Тридцатилетняя война", "манёвр", "бригады"],
+        tags: ["полевое сражение", "манёвр", "бригады"],
         army: {
           name: "Шведская бригада",
           objective: "Продвигаться организованными волнами и выигрывать бой темпом приказов, а не одной лобовой схваткой.",
@@ -740,10 +875,11 @@
       },
       {
         id: "imperial-tercio",
+        sectionId: "field-battles",
         name: "Имперский терцио",
         theatre: "Тридцатилетняя война",
         summary: "Стойкий пехотный кулак с крупным пиковым блоком и поддержкой тяжёлой конницы.",
-        tags: ["терцио", "стойкость", "ударный центр"],
+        tags: ["полевое сражение", "терцио", "стойкость"],
         army: {
           name: "Имперский терцио",
           objective: "Принять бой на пиках, пережить первый обмен огнём и нанести контрудар тяжёлой конницей в момент слома.",
@@ -787,7 +923,147 @@
         }
       },
       {
+        id: "imperialist-colunela",
+        sectionId: "field-battles",
+        name: "Имперская колунела",
+        theatre: "Итальянские войны",
+        summary: "Ландскнехтский центр и тяжёлая конница для методичного продавливания фронта.",
+        tags: ["полевое сражение", "Итальянские войны", "ландскнехты"],
+        army: {
+          name: "Имперская колунела",
+          objective: "Вязать фронт плотным центром, а затем раскрывать бой ударом конницы по ослабленному крылу.",
+          battalias: [
+            {
+              name: "Колунела ветеранов",
+              commander: "Коннетабль де Фрундсберг",
+              commandRating: 7,
+              type: "foot",
+              units: [
+                {
+                  templateId: "pike-block",
+                  name: "Ландскнехтский блок",
+                  specialRules: "Пики (Pikes), Ёж (Hedgehog), Крупный юнит (Large Unit)",
+                  notes: "Плотный блок для лобового удержания и продавливания фронта."
+                },
+                { templateId: "musketeers", name: "Аркебузиры левого плеча" },
+                { templateId: "musketeers", name: "Аркебузиры правого плеча" }
+              ]
+            },
+            {
+              name: "Имперская конница",
+              commander: "Граф фон Паппенхайм",
+              commandRating: 7,
+              type: "horse",
+              units: [
+                { templateId: "lancers", name: "Копейщики крыла" },
+                { templateId: "cavalry", name: "Рейтары поддержки" }
+              ]
+            },
+            {
+              name: "Сакры линии",
+              commander: "Мастер Людвиг",
+              commandRating: 6,
+              type: "artillery",
+              units: [
+                { templateId: "medium-artillery", name: "Полевая сакра" }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        id: "french-ordonnance",
+        sectionId: "decisive-assaults",
+        name: "Французская ордонансная армия",
+        theatre: "Итальянские войны",
+        summary: "Жандармы и швейцарский центр: ранний Pike & Shotte как один концентрированный удар.",
+        tags: ["прорыв", "Итальянские войны", "жандармы"],
+        army: {
+          name: "Французская ордонансная армия",
+          objective: "Сковать противника центром и решить бой быстрым ударом жандармов по одному направлению.",
+          battalias: [
+            {
+              name: "Швейцарский центр",
+              commander: "Сеньор де Лотрек",
+              commandRating: 8,
+              type: "foot",
+              units: [
+                { templateId: "pike-block", name: "Швейцарские пики" },
+                { templateId: "musketeers", name: "Аркебузиры слева" },
+                { templateId: "musketeers", name: "Аркебузиры справа" }
+              ]
+            },
+            {
+              name: "Жандармы авангарда",
+              commander: "Герцог де Немур",
+              commandRating: 8,
+              type: "horse",
+              units: [
+                { templateId: "lancers", name: "Жандармы первой линии" },
+                { templateId: "lancers", name: "Жандармы резерва" }
+              ]
+            },
+            {
+              name: "Орудия прорыва",
+              commander: "Мастер Жирар",
+              commandRating: 6,
+              type: "artillery",
+              units: [
+                { templateId: "medium-artillery", name: "Фальконет батареи" }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        id: "new-model-army",
+        sectionId: "decisive-assaults",
+        name: "Армия нового образца",
+        theatre: "Английская гражданская война",
+        summary: "Дисциплина, глубина построения и управляемый резерв для затяжного большого боя.",
+        tags: ["прорыв", "вторая линия", "резерв"],
+        army: {
+          name: "Армия нового образца",
+          objective: "Выиграть бой не одним рывком, а последовательным нажимом первой линии и свежего резерва.",
+          battalias: [
+            {
+              name: "Первая линия",
+              commander: "Сэр Томас Фэрфакс",
+              commandRating: 8,
+              type: "foot",
+              units: [
+                { templateId: "pike-block", name: "Пики первой линии" },
+                { templateId: "musketeers", name: "Мушкетёры первой линии слева" },
+                { templateId: "musketeers", name: "Мушкетёры первой линии справа" }
+              ]
+            },
+            {
+              name: "Вторая линия",
+              commander: "Ген. Скиппон",
+              commandRating: 8,
+              type: "foot",
+              units: [
+                { templateId: "pike-block", name: "Пики второй линии" },
+                { templateId: "musketeers", name: "Мушкетёры второй линии слева" },
+                { templateId: "musketeers", name: "Мушкетёры второй линии справа" }
+              ]
+            },
+            {
+              name: "Конный резерв",
+              commander: "Оливер Кромвель",
+              commandRating: 8,
+              type: "horse",
+              units: [
+                { templateId: "cavalry", name: "Железнобокие" },
+                { templateId: "cavalry", name: "Резервный эскадрон" }
+              ]
+            }
+          ]
+        }
+      },
+      {
         id: "grand-alliance",
+        sectionId: "late-linear-war",
         name: "Бригада Великого альянса",
         theatre: "Войны Людовика XIV",
         summary: "Поздний Pike & Shotte: линия, первый залп, штыки-пробки и более дисциплинированное командование.",
@@ -840,6 +1116,7 @@
       },
       {
         id: "french-expedition",
+        sectionId: "late-linear-war",
         name: "Французский экспедиционный корпус",
         theatre: "Войны Людовика XIV",
         summary: "Поздняя французская линия с гвардией, тяжёлой кавалерией и устойчивым управлением на решающем участке.",
@@ -891,6 +1168,33 @@
         }
       }
     ];
+  }
+
+  function renderArmyPresetLibrary() {
+    return armyPresetSections
+      .map((section) => {
+        const items = armyPresets.filter((preset) => preset.sectionId === section.id);
+        if (!items.length) {
+          return "";
+        }
+
+        return `
+          <section class="army-preset-section" aria-labelledby="preset-section-${escapeAttribute(section.id)}">
+            <div class="army-preset-section-header">
+              <div>
+                <p class="panel-kicker">Тип столкновения</p>
+                <h3 id="preset-section-${escapeAttribute(section.id)}">${escapeHtml(section.label)}</h3>
+              </div>
+              <span class="meta-chip">${escapeHtml(section.pointsLabel)}</span>
+            </div>
+            <p class="reference-text army-preset-section-copy">${escapeHtml(section.description)}</p>
+            <div class="army-preset-section-grid">
+              ${items.map(renderArmyPresetCard).join("")}
+            </div>
+          </section>
+        `;
+      })
+      .join("");
   }
 
   function createPresetArmy(configuration) {
@@ -1167,7 +1471,7 @@
     });
 
     if (refs.armyDemoGrid) {
-      refs.armyDemoGrid.innerHTML = isGameView ? "" : armyPresets.map(renderArmyPresetCard).join("");
+      refs.armyDemoGrid.innerHTML = isGameView ? "" : renderArmyPresetLibrary();
     }
 
     const armyIds = isSoloView ? [state.soloArmyId] : ["blue", "red"];

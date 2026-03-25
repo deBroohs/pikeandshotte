@@ -2263,6 +2263,42 @@ select {
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
 }
 
+.army-preset-section {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 14px;
+  padding-top: 4px;
+}
+
+.army-preset-section + .army-preset-section {
+  margin-top: 8px;
+  padding-top: 22px;
+  border-top: 1px solid rgba(84, 39, 20, 0.12);
+}
+
+.army-preset-section-header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.army-preset-section-header h3 {
+  margin: 0;
+  font-size: 1.28rem;
+}
+
+.army-preset-section-copy {
+  margin: -4px 0 0;
+  max-width: 72ch;
+}
+
+.army-preset-section-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+}
+
 .army-preset-card {
   display: flex;
   flex-direction: column;
@@ -2487,7 +2523,7 @@ select {
 
   .armies-mode-switch {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .armies-mode-button {
@@ -2506,6 +2542,11 @@ select {
   .solo-army-button {
     flex: 1 1 160px;
     min-width: 0;
+  }
+
+  .army-preset-section-header {
+    align-items: start;
+    flex-direction: column;
   }
 
   .utility-menu-inline {
