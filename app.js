@@ -1696,7 +1696,7 @@
     if (refs.phaseHelpGrid) {
       refs.phaseHelpGrid.innerHTML = data.phaseBlueprints
         .filter((phase) => phase.armyId === "blue")
-        .map((phase) => renderPhaseHelpCard(phase, referenceArmyNames.blue, { isCurrent: false }))
+        .map((phase) => renderPhaseHelpCard(phase, referenceArmyNames.blue, { isCurrent: false, showArmyName: false }))
         .join("");
     }
   }
@@ -1737,7 +1737,7 @@
           })}
         </div>
         <div class="phase-help-grid phase-help-grid-single">
-          ${renderPhaseHelpCard(current, armyName, { isCurrent: true })}
+          ${renderPhaseHelpCard(current, armyName, { isCurrent: true, showArmyName: true })}
         </div>
       </section>
     `;
@@ -1765,13 +1765,13 @@
     `;
   }
 
-  function renderPhaseHelpCard(phase, armyName, { isCurrent }) {
+  function renderPhaseHelpCard(phase, armyName, { isCurrent, showArmyName = true }) {
     const sideClass = phase.armyId === "red" ? "phase-help-red" : "phase-help-blue";
     return `
       <article class="phase-help-card ${sideClass} ${isCurrent ? "is-active" : ""}">
         <div class="phase-help-header">
           <div>
-            <p class="phase-help-side">${escapeHtml(armyName)}</p>
+            ${showArmyName ? `<p class="phase-help-side">${escapeHtml(armyName)}</p>` : ""}
             <h3>${escapeHtml(phase.phaseLabel)}</h3>
           </div>
           ${isCurrent ? `<span class="phase-help-badge">Текущая</span>` : ""}
