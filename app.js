@@ -19,6 +19,11 @@
   };
 
   const refs = {
+    factCarousel: document.getElementById("fact-carousel"),
+    factCarouselTitle: document.getElementById("fact-carousel-title"),
+    factCarouselText: document.getElementById("fact-carousel-text"),
+    factCarouselSource: document.getElementById("fact-carousel-source"),
+    factCarouselDots: document.getElementById("fact-carousel-dots"),
     statusTurn: document.getElementById("status-turn"),
     statusSide: document.getElementById("status-side"),
     statusPhase: document.getElementById("status-phase"),
@@ -45,6 +50,10 @@
   };
 
   let state = loadState() || createDefaultState();
+  const factRotation = {
+    currentIndex: 0,
+    timerId: null
+  };
 
   initialize();
   renderAll();
@@ -101,6 +110,7 @@
     });
 
     setActiveTab(document.querySelector(".tab.is-active")?.dataset.tabTarget || "dashboard");
+    initializeHistoricalFactCarousel();
   }
 
   function createDefaultState() {
@@ -1662,6 +1672,66 @@
     renderReference();
     renderUnits();
     saveState();
+  }
+
+  function initializeHistoricalFactCarousel() {
+    const facts = data.historicalFacts || [];
+    if (!refs.factCarousel || !refs.factCarouselTitle || !refs.factCarouselText || !refs.factCarouselSource || !refs.factCarouselDots || !facts.length) {
+      if (refs.factCarousel) {
+        refs.factCarousel.hidden = true;
+      }
+      return;
+    }
+
+    refs.factCarousel.hidden = false;
+    factRotation.currentIndex = Math.floor(Math.random() * facts.length);
+    renderHistoricalFact();
+
+    if (factRotation.timerId) {
+      window.clearInterval(factRotation.timerId);
+    }
+
+    if (facts.length > 1) {
+      factRotation.timerId = window.setInterval(() => {
+        advanceHistoricalFact();
+      }, 9000);
+    }
+  }
+
+  function advanceHistoricalFact() {
+    const facts = data.historicalFacts || [];
+    if (!facts.length) {
+      return;
+    }
+
+    if (facts.length === 1) {
+      factRotation.currentIndex = 0;
+      renderHistoricalFact();
+      return;
+    }
+
+    let nextIndex = factRotation.currentIndex;
+    while (nextIndex === factRotation.currentIndex) {
+      nextIndex = Math.floor(Math.random() * facts.length);
+    }
+
+    factRotation.currentIndex = nextIndex;
+    renderHistoricalFact();
+  }
+
+  function renderHistoricalFact() {
+    const facts = data.historicalFacts || [];
+    const fact = facts[factRotation.currentIndex];
+    if (!fact) {
+      return;
+    }
+
+    refs.factCarouselTitle.textContent = fact.title;
+    refs.factCarouselText.textContent = fact.text;
+    refs.factCarouselSource.textContent = fact.source;
+    refs.factCarouselDots.innerHTML = facts
+      .map((item, index) => `<span class="fact-carousel-dot ${index === factRotation.currentIndex ? "is-active" : ""}" data-fact-id="${escapeAttribute(item.id)}"></span>`)
+      .join("");
   }
 
   function renderStatus() {
