@@ -32,7 +32,7 @@
   <link rel="manifest" href="./site.webmanifest">
   <link rel="sitemap" type="application/xml" title="Sitemap" href="./sitemap.xml">
   <link rel="preload" href="./assets/arts/hero-battle.jpg" as="image" fetchpriority="high">
-  <link rel="stylesheet" href="./styles.css?v=20260325-16">
+  <link rel="stylesheet" href="./styles.css?v=20260325-17">
   <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -230,41 +230,46 @@
     </main>
 
     <footer class="site-footer">
-      <div class="site-footer-grid">
-        <section class="footer-block">
-          <p class="panel-kicker">Field Companion</p>
+      <div class="site-footer-main">
+        <section class="site-footer-column site-footer-brand">
+          <p class="panel-kicker footer-kicker">Field Companion</p>
           <h2>Pike &amp; Shotte War Room</h2>
-          <p class="footer-copy">Неофициальный companion для партии, армбилдера и справочника по Pike &amp; Shotte. Сайт помогает собирать армии, вести ход игры и быстро сверяться с ключевыми профилями.</p>
-          <div class="chip-row">
-            <span class="meta-chip">1st Edition</span>
-            <span class="meta-chip">Армибилдер</span>
-            <span class="meta-chip">Локальные сохранения</span>
-          </div>
+          <p>Неофициальный companion для партии, армбилдера и игрового стола по Pike &amp; Shotte. Сайт помогает собирать армии, вести игру и быстро сверяться с профилями отрядов и ключевыми правилами.</p>
         </section>
 
-        <section class="footer-block">
-          <p class="panel-kicker">Быстрые переходы</p>
-          <div class="footer-nav">
-            <button class="footer-link" type="button" data-footer-tab="dashboard">Ход партии</button>
-            <button class="footer-link" type="button" data-footer-tab="armies">Армии</button>
-            <button class="footer-link" type="button" data-footer-tab="reference">Правила</button>
-            <button class="footer-link" type="button" data-footer-tab="units">Профили</button>
-          </div>
+        <section class="site-footer-column">
+          <h3>Инструменты</h3>
+          <ul class="site-footer-list">
+            <li>Армибилдер для сбора состава по баталиям</li>
+            <li>Игровой стол для отслеживания статусов</li>
+            <li>Профили юнитов и базовые спецправила</li>
+          </ul>
         </section>
 
-        <section class="footer-block">
-          <p class="panel-kicker">Проект</p>
-          <ul class="footer-list">
-            <li>Сохранения партии и армий хранятся в браузере на этом устройстве.</li>
-            <li>Опубликовано через GitHub Pages и доступно как статический сайт.</li>
-            <li><a href="https://github.com/deBroohs/pikeandshotte" target="_blank" rel="noreferrer">Открыть репозиторий проекта</a></li>
+        <section class="site-footer-column">
+          <h3>Форматы игры</h3>
+          <ul class="site-footer-list">
+            <li>Шаблоны армий на 1000 pts</li>
+            <li>Шаблоны армий на 2000 pts</li>
+            <li>Шаблоны армий на 3000+ pts</li>
+          </ul>
+        </section>
+
+        <section class="site-footer-column">
+          <h3>Данные партии</h3>
+          <ul class="site-footer-list">
+            <li>Сохранения хранятся локально в браузере</li>
+            <li>Сайт работает как статический companion</li>
+            <li>Подходит для игры за столом и быстрого референса</li>
           </ul>
         </section>
       </div>
 
-      <div class="site-footer-bar">
-        <p>Основано на правилах Pike &amp; Shotte, 1st Edition. Инструмент неофициальный и предназначен для удобства игры.</p>
-        <p>Pike &amp; Shotte и связанные названия используются только как справочная привязка к варгейму Warlord Games.</p>
+      <div class="site-footer-bottom">
+        <div class="site-footer-bottom-inner">
+          <p>Основано на правилах Pike &amp; Shotte, 1st Edition. Инструмент неофициальный и предназначен для удобства игры.</p>
+          <p>Pike &amp; Shotte и связанные названия используются только как справочная привязка к варгейму Warlord Games.</p>
+        </div>
       </div>
     </footer>
   </div>
@@ -414,7 +419,7 @@
 
   <input id="import-file-input" type="file" accept="application/json" hidden>
 
-  <script src="./rules-data.js?v=20260325-16"></script>
-  <script src="./app.js?v=20260325-16"></script>
+  <script src="./rules-data.js?v=20260325-17"></script>
+  <script src="./app.js?v=20260325-17"></script>
 </body>
 </html>
