@@ -49,6 +49,7 @@
 
 html {
   min-height: 100%;
+  overflow-x: clip;
   background:
     radial-gradient(circle at top right, rgba(174, 122, 51, 0.18), transparent 28%),
     radial-gradient(circle at left 18%, rgba(35, 73, 61, 0.16), transparent 30%),
@@ -57,6 +58,7 @@ html {
 
 body {
   margin: 0;
+  overflow-x: clip;
   color: var(--ink);
   font-family: var(--body-font);
   background:
@@ -90,7 +92,7 @@ select {
 
 .page-shell {
   width: min(1440px, calc(100vw - 24px));
-  margin: 18px auto 32px;
+  margin: 18px auto 0;
 }
 
 .app-header {
@@ -398,7 +400,7 @@ select {
 
 .site-footer-main {
   display: grid;
-  grid-template-columns: minmax(0, 1.25fr) repeat(3, minmax(0, 0.8fr));
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.95fr);
   gap: 28px;
   padding: 34px 26px 30px;
 }
@@ -1584,7 +1586,7 @@ select {
 @media (max-width: 760px) {
   .page-shell {
     width: min(100vw - 12px, 100%);
-    margin: 8px auto 24px;
+    margin: 8px auto 0;
   }
 
   .app-header,
