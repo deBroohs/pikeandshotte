@@ -32,7 +32,7 @@
   <link rel="manifest" href="./site.webmanifest">
   <link rel="sitemap" type="application/xml" title="Sitemap" href="./sitemap.xml">
   <link rel="preload" href="./assets/arts/hero-battle.jpg" as="image" fetchpriority="high">
-  <link rel="stylesheet" href="./styles.css?v=20260329-8">
+  <link rel="stylesheet" href="./styles.css?v=20260329-9">
   <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -69,27 +69,15 @@
     </div>
     <aside class="site-visitor-card" aria-label="Статистика посещений сайта">
       <p class="site-visitor-kicker">Визиты</p>
-      <div class="site-visitor-badges">
-        <img
-          class="site-visitor-badge"
-          src="https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fdebroohs.github.io%2Fpikeandshotte%2F&label=all&labelColor=%235a2a17&countColor=%237a3b1f&style=flat"
-          data-live-src="https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fdebroohs.github.io%2Fpikeandshotte%2F&label=all&labelColor=%235a2a17&countColor=%237a3b1f&style=flat"
-          alt="Общее количество посещений сайта"
-          loading="lazy"
-          decoding="async"
-          referrerpolicy="no-referrer"
-          onerror="this.onerror=null;this.src='https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fdebroohs.github.io%2Fpikeandshotte%2F&count_bg=%237a3b1f&title_bg=%235a2a17&icon=&icon_color=%23f3ead6&title=all&edge_flat=true'"
-        >
-        <img
-          class="site-visitor-badge"
-          src="https://api.visitorbadge.io/api/daily?path=https%3A%2F%2Fdebroohs.github.io%2Fpikeandshotte%2F&label=today&labelColor=%2323493d&countColor=%23315c74&style=flat"
-          data-live-src="https://api.visitorbadge.io/api/daily?path=https%3A%2F%2Fdebroohs.github.io%2Fpikeandshotte%2F&label=today&labelColor=%2323493d&countColor=%23315c74&style=flat"
-          alt="Количество посещений сайта за сегодня"
-          loading="lazy"
-          decoding="async"
-          referrerpolicy="no-referrer"
-          onerror="this.hidden=true"
-        >
+      <div class="site-visitor-stats" aria-live="polite">
+        <div class="site-visitor-stat">
+          <span class="site-visitor-label">all</span>
+          <strong class="site-visitor-value" data-visitor-total>...</strong>
+        </div>
+        <div class="site-visitor-stat">
+          <span class="site-visitor-label">today</span>
+          <strong class="site-visitor-value" data-visitor-today>...</strong>
+        </div>
       </div>
     </aside>
   </div>
@@ -421,8 +409,8 @@
   <input id="import-file-input" type="file" accept="application/json" hidden>
 
   <script src="./rules-data.js?v=20260325-30"></script>
-  <script src="./app.js?v=20260325-30"></script>
-  <script src="./assets/site/visitor-counter-config.js?v=20260329-5"></script>
-  <script src="./plugins/visitor-counter/runtime.js?v=20260329-5"></script>
+  <script src="./app.js?v=20260329-8"></script>
+  <script src="./assets/site/visitor-counter-config.js?v=20260329-8"></script>
+  <script src="./plugins/visitor-counter/runtime.js?v=20260329-8"></script>
 </body>
 </html>

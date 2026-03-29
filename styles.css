@@ -2009,7 +2009,7 @@ select {
 }
 
 .site-visitor-kicker,
-.site-visitor-badges {
+.site-visitor-stats {
   margin: 0;
 }
 
@@ -2020,18 +2020,33 @@ select {
   text-transform: uppercase;
 }
 
-.site-visitor-badges {
+.site-visitor-stats {
   display: grid;
   gap: 4px;
-  width: auto;
-  justify-items: start;
+  width: 100%;
 }
 
-.site-visitor-badge {
-  display: block;
-  width: auto;
-  max-width: 94px;
-  height: 18px;
+.site-visitor-stat {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 18px;
+  padding: 1px 0;
+}
+
+.site-visitor-label {
+  color: #5d5448;
+  font: 700 0.62rem/1 var(--ui-font);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.site-visitor-value {
+  color: #25190f;
+  font: 800 0.78rem/1 var(--ui-font);
+  white-space: nowrap;
 }
 
 .tabbar {

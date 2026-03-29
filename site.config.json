@@ -28,16 +28,18 @@
   ],
   "plugins": {
     "visitorCounter": {
-      "enabled": false,
-      "provider": "free-visitor-counter",
-      "apiBaseUrl": "https://visitor.6developer.com",
-      "domain": "debroohs.github.io",
+      "enabled": true,
+      "provider": "countapi-mirror",
+      "apiBaseUrl": "https://countapi.mileshilliard.com/api/v1",
+      "counterKeyPrefix": "debroohs-github-io-pikeandshotte-v2",
       "allowLocal": false,
       "debug": false,
       "refreshIntervalSeconds": 30,
+      "sessionMinutes": 30,
+      "timeZone": "Asia/Yekaterinburg",
       "summary": {
         "enabled": true,
-        "title": "Статистика сайта"
+        "title": "\u0421\u0442\u0430\u0442\u0438\u0441\u0442\u0438\u043a\u0430 \u0441\u0430\u0439\u0442\u0430"
       }
     }
   }

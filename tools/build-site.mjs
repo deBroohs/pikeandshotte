@@ -73,25 +73,40 @@ await fs.writeFile(
 console.log("Generated site.webmanifest, robots.txt, sitemap.xml, metadata.json and visitor counter config");
 
 function normalizeVisitorCounterConfig(rawConfig = {}) {
+  const parsedSiteUrl = new URL(siteUrl);
   return {
     enabled: Boolean(rawConfig.enabled),
-    provider: rawConfig.provider === "free-visitor-counter" ? "free-visitor-counter" : "free-visitor-counter",
+    provider: rawConfig.provider === "countapi-mirror" ? "countapi-mirror" : "countapi-mirror",
     apiBaseUrl: typeof rawConfig.apiBaseUrl === "string" && rawConfig.apiBaseUrl.trim()
       ? rawConfig.apiBaseUrl.trim()
-      : "https://visitor.6developer.com",
-    domain: typeof rawConfig.domain === "string" && rawConfig.domain.trim()
-      ? rawConfig.domain.trim()
-      : new URL(siteUrl).hostname,
+      : "https://countapi.mileshilliard.com/api/v1",
+    counterKeyPrefix: typeof rawConfig.counterKeyPrefix === "string" && rawConfig.counterKeyPrefix.trim()
+      ? rawConfig.counterKeyPrefix.trim()
+      : sanitizeCounterKey(`${parsedSiteUrl.hostname}${parsedSiteUrl.pathname}`),
     allowLocal: Boolean(rawConfig.allowLocal),
     debug: Boolean(rawConfig.debug),
     refreshIntervalSeconds: Number.isFinite(Number(rawConfig.refreshIntervalSeconds))
       ? Math.max(15, Math.round(Number(rawConfig.refreshIntervalSeconds)))
       : 30,
+    sessionMinutes: Number.isFinite(Number(rawConfig.sessionMinutes))
+      ? Math.max(5, Math.round(Number(rawConfig.sessionMinutes)))
+      : 30,
+    timeZone: typeof rawConfig.timeZone === "string" && rawConfig.timeZone.trim()
+      ? rawConfig.timeZone.trim()
+      : "UTC",
     summary: {
       enabled: rawConfig.summary?.enabled !== false,
       title: typeof rawConfig.summary?.title === "string" && rawConfig.summary.title.trim()
         ? rawConfig.summary.title.trim()
-        : "Статистика сайта"
+        : "\u0421\u0442\u0430\u0442\u0438\u0441\u0442\u0438\u043a\u0430 \u0441\u0430\u0439\u0442\u0430"
     }
   };
+}
+
+function sanitizeCounterKey(value) {
+  return String(value || "site-counter")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 96) || "site-counter";
 }

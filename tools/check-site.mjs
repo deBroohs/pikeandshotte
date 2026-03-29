@@ -28,6 +28,7 @@ const manifest = JSON.parse(await fs.readFile(path.join(rootDir, "site.webmanife
 const robots = await fs.readFile(path.join(rootDir, "robots.txt"), "utf8");
 const sitemap = await fs.readFile(path.join(rootDir, "sitemap.xml"), "utf8");
 const config = JSON.parse(await fs.readFile(path.join(rootDir, "site.config.json"), "utf8"));
+const visitorCounterSummaryEnabled = Boolean(config.plugins?.visitorCounter?.summary?.enabled);
 
 const assertions = [
   ["canonical", /<link rel="canonical" href="https:\/\/debroohs\.github\.io\/pikeandshotte\/">/],
@@ -39,10 +40,15 @@ const assertions = [
   ["json-ld", /<script type="application\/ld\+json">[\s\S]*"@type": "WebApplication"/],
   ["css versioning", /styles\.css\?v=/],
   ["rules data versioning", /rules-data\.js\?v=/],
-  ["app versioning", /app\.js\?v=/],
-  ["visitor counter config versioning", /visitor-counter-config\.js\?v=/],
-  ["visitor counter runtime versioning", /plugins\/visitor-counter\/runtime\.js\?v=/]
+  ["app versioning", /app\.js\?v=/]
 ];
+
+if (visitorCounterSummaryEnabled) {
+  assertions.push(
+    ["visitor counter config versioning", /visitor-counter-config\.js\?v=/],
+    ["visitor counter runtime versioning", /plugins\/visitor-counter\/runtime\.js\?v=/]
+  );
+}
 
 for (const [label, pattern] of assertions) {
   if (!pattern.test(indexHtml)) {
