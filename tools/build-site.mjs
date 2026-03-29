@@ -84,6 +84,9 @@ function normalizeVisitorCounterConfig(rawConfig = {}) {
       : new URL(siteUrl).hostname,
     allowLocal: Boolean(rawConfig.allowLocal),
     debug: Boolean(rawConfig.debug),
+    refreshIntervalSeconds: Number.isFinite(Number(rawConfig.refreshIntervalSeconds))
+      ? Math.max(15, Math.round(Number(rawConfig.refreshIntervalSeconds)))
+      : 30,
     summary: {
       enabled: rawConfig.summary?.enabled !== false,
       title: typeof rawConfig.summary?.title === "string" && rawConfig.summary.title.trim()

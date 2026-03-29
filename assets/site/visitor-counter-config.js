@@ -5,8 +5,9 @@ window.PikeShotteVisitorCounterConfig = {
   "domain": "debroohs.github.io",
   "allowLocal": false,
   "debug": false,
+  "refreshIntervalSeconds": 30,
   "summary": {
-    "enabled": false,
+    "enabled": true,
     "title": "Статистика сайта"
   }
 };
