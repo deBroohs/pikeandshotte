@@ -1994,10 +1994,10 @@ select {
 
 .site-visitor-card {
   display: grid;
-  gap: 12px;
+  gap: 14px;
   align-self: start;
   min-width: 0;
-  padding: 16px 18px;
+  padding: 16px 18px 14px;
   border-radius: 22px;
   border: 1px solid rgba(84, 39, 20, 0.14);
   background:
@@ -2007,8 +2007,16 @@ select {
 }
 
 .site-visitor-kicker,
-.site-visitor-note {
+.site-visitor-total-label,
+.site-visitor-meta-item {
   margin: 0;
+}
+
+.site-visitor-head {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 14px;
 }
 
 .site-visitor-kicker {
@@ -2018,36 +2026,88 @@ select {
   text-transform: uppercase;
 }
 
-.site-visitor-stats {
+.site-visitor-values {
   display: grid;
-  gap: 10px;
+  justify-items: end;
+  gap: 4px;
+  text-align: right;
 }
 
-.site-visitor-stat {
-  display: grid;
-  gap: 6px;
-  padding: 12px;
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.62);
-  border: 1px solid rgba(84, 39, 20, 0.1);
+.site-visitor-total {
+  color: #25190f;
+  font-family: var(--display-font);
+  font-size: clamp(1.7rem, 2.3vw, 2.5rem);
+  line-height: 0.92;
 }
 
-.site-visitor-label {
-  color: #5d5448;
-  font: 700 0.75rem/1.1 var(--ui-font);
-  letter-spacing: 0.06em;
+.site-visitor-total-label {
+  color: #6f6659;
+  font: 700 0.7rem/1 var(--ui-font);
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
-.site-visitor-badge {
+.site-visitor-graph-shell {
+  display: grid;
+  gap: 8px;
+}
+
+.site-visitor-graph {
   display: block;
-  max-width: 100%;
+  width: 100%;
   height: auto;
 }
 
-.site-visitor-note {
+.site-visitor-grid-line {
+  fill: none;
+  stroke: rgba(84, 39, 20, 0.16);
+  stroke-width: 1;
+}
+
+.site-visitor-grid-line.is-faint {
+  stroke: rgba(84, 39, 20, 0.09);
+}
+
+.site-visitor-graph-area {
+  fill: rgba(122, 59, 31, 0.12);
+}
+
+.site-visitor-graph-line {
+  fill: none;
+  stroke: #7a3b1f;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.site-visitor-graph-point {
+  fill: #fff8f0;
+  stroke: #7a3b1f;
+  stroke-width: 3;
+}
+
+.site-visitor-axis {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: #6f6659;
+  font: 700 0.7rem/1 var(--ui-font);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.site-visitor-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 6px 12px;
+  padding-top: 2px;
   color: #5d5448;
-  font: 600 0.78rem/1.4 var(--ui-font);
+  font: 700 0.79rem/1.35 var(--ui-font);
+}
+
+.site-visitor-meta-item strong {
+  color: #25190f;
 }
 
 .tabbar {

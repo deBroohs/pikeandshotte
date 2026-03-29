@@ -1,12 +1,12 @@
 window.PikeShotteVisitorCounterConfig = {
-  "enabled": false,
-  "provider": "goatcounter",
-  "endpoint": "",
-  "scriptUrl": "https://gc.zgo.at/count.js",
+  "enabled": true,
+  "provider": "free-visitor-counter",
+  "apiBaseUrl": "https://visitor.6developer.com",
+  "domain": "debroohs.github.io",
   "allowLocal": false,
   "debug": false,
   "summary": {
-    "enabled": false,
+    "enabled": true,
     "title": "Статистика сайта"
   }
 };

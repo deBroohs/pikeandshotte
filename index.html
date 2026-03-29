@@ -32,7 +32,7 @@
   <link rel="manifest" href="./site.webmanifest">
   <link rel="sitemap" type="application/xml" title="Sitemap" href="./sitemap.xml">
   <link rel="preload" href="./assets/arts/hero-battle.jpg" as="image" fetchpriority="high">
-  <link rel="stylesheet" href="./styles.css?v=20260329-3">
+  <link rel="stylesheet" href="./styles.css?v=20260329-4">
   <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -68,34 +68,34 @@
       </div>
     </div>
     <aside class="site-visitor-card" aria-label="Статистика посещений сайта">
-      <p class="site-visitor-kicker">Статистика сайта</p>
-      <div class="site-visitor-stats">
-        <div class="site-visitor-stat">
-          <span class="site-visitor-label">Всего визитов</span>
-          <img
-            class="site-visitor-badge"
-            src="https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fdebroohs.github.io%2Fpikeandshotte%2F&label=all&labelColor=%235a2a17&countColor=%237a3b1f&style=flat"
-            alt="Общее количество посещений сайта"
-            loading="lazy"
-            decoding="async"
-            referrerpolicy="no-referrer"
-            onerror="this.closest('.site-visitor-stat').hidden=true"
-          >
+      <div class="site-visitor-head">
+        <div>
+          <p class="site-visitor-kicker">Статистика сайта</p>
         </div>
-        <div class="site-visitor-stat">
-          <span class="site-visitor-label">За сегодня</span>
-          <img
-            class="site-visitor-badge"
-            src="https://api.visitorbadge.io/api/daily?path=https%3A%2F%2Fdebroohs.github.io%2Fpikeandshotte%2F&label=today&labelColor=%2323493d&countColor=%23315c74&style=flat"
-            alt="Количество посещений сайта за сегодня"
-            loading="lazy"
-            decoding="async"
-            referrerpolicy="no-referrer"
-            onerror="this.closest('.site-visitor-stat').hidden=true"
-          >
+        <div class="site-visitor-values">
+          <strong class="site-visitor-total" data-visitor-total>...</strong>
+          <span class="site-visitor-total-label">всего визитов</span>
         </div>
       </div>
-      <p class="site-visitor-note">Публичный счётчик посещений для live-версии сайта.</p>
+
+      <div class="site-visitor-graph-shell">
+        <svg class="site-visitor-graph" viewBox="0 0 240 108" aria-hidden="true">
+          <path class="site-visitor-grid-line" d="M20 78H220"></path>
+          <path class="site-visitor-grid-line is-faint" d="M20 48H220"></path>
+          <path class="site-visitor-graph-area" data-visitor-graph-area d=""></path>
+          <path class="site-visitor-graph-line" data-visitor-graph-line d=""></path>
+          <circle class="site-visitor-graph-point" data-visitor-point-start cx="20" cy="78" r="4"></circle>
+          <circle class="site-visitor-graph-point" data-visitor-point-end cx="220" cy="78" r="5"></circle>
+        </svg>
+        <div class="site-visitor-axis">
+          <span>до сегодня</span>
+          <span>сегодня</span>
+        </div>
+      </div>
+
+      <div class="site-visitor-meta">
+        <span class="site-visitor-meta-item">Сегодня: <strong data-visitor-today>...</strong></span>
+      </div>
     </aside>
   </div>
   <nav class="tabbar" aria-label="Основная навигация">

@@ -75,11 +75,13 @@ console.log("Generated site.webmanifest, robots.txt, sitemap.xml, metadata.json 
 function normalizeVisitorCounterConfig(rawConfig = {}) {
   return {
     enabled: Boolean(rawConfig.enabled),
-    provider: rawConfig.provider === "goatcounter" ? "goatcounter" : "goatcounter",
-    endpoint: typeof rawConfig.endpoint === "string" ? rawConfig.endpoint.trim() : "",
-    scriptUrl: typeof rawConfig.scriptUrl === "string" && rawConfig.scriptUrl.trim()
-      ? rawConfig.scriptUrl.trim()
-      : "https://gc.zgo.at/count.js",
+    provider: rawConfig.provider === "free-visitor-counter" ? "free-visitor-counter" : "free-visitor-counter",
+    apiBaseUrl: typeof rawConfig.apiBaseUrl === "string" && rawConfig.apiBaseUrl.trim()
+      ? rawConfig.apiBaseUrl.trim()
+      : "https://visitor.6developer.com",
+    domain: typeof rawConfig.domain === "string" && rawConfig.domain.trim()
+      ? rawConfig.domain.trim()
+      : new URL(siteUrl).hostname,
     allowLocal: Boolean(rawConfig.allowLocal),
     debug: Boolean(rawConfig.debug),
     summary: {
