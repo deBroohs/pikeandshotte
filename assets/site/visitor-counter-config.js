@@ -1,12 +1,12 @@
 window.PikeShotteVisitorCounterConfig = {
-  "enabled": true,
+  "enabled": false,
   "provider": "free-visitor-counter",
   "apiBaseUrl": "https://visitor.6developer.com",
   "domain": "debroohs.github.io",
   "allowLocal": false,
   "debug": false,
   "summary": {
-    "enabled": true,
+    "enabled": false,
     "title": "Статистика сайта"
   }
 };
