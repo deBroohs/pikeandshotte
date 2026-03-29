@@ -37,7 +37,10 @@
   async function loadStats(domain) {
     if (shouldRecordVisit(domain)) {
       try {
-        return normalizeStats(await postVisit(domain));
+        const postedStats = normalizeStats(await postVisit(domain));
+        if (postedStats) {
+          return postedStats;
+        }
       } catch (error) {
         debugLog(`POST /visit failed, falling back to GET: ${error instanceof Error ? error.message : String(error)}`);
       }
@@ -54,10 +57,6 @@
   function renderSummary(card, stats) {
     const totalNode = card.querySelector("[data-visitor-total]");
     const todayNode = card.querySelector("[data-visitor-today]");
-    const graphLine = card.querySelector("[data-visitor-graph-line]");
-    const graphArea = card.querySelector("[data-visitor-graph-area]");
-    const pointStart = card.querySelector("[data-visitor-point-start]");
-    const pointEnd = card.querySelector("[data-visitor-point-end]");
 
     if (totalNode) {
       totalNode.textContent = formatNumber(stats.totalCount);
@@ -66,64 +65,18 @@
     if (todayNode) {
       todayNode.textContent = formatNumber(stats.todayCount);
     }
-
-    const previousTotal = Math.max(stats.totalCount - stats.todayCount, 0);
-    const graph = buildGraph(previousTotal, stats.totalCount);
-
-    if (graphLine) {
-      graphLine.setAttribute("d", graph.linePath);
-    }
-
-    if (graphArea) {
-      graphArea.setAttribute("d", graph.areaPath);
-    }
-
-    if (pointStart) {
-      pointStart.setAttribute("cx", String(graph.start.x));
-      pointStart.setAttribute("cy", String(graph.start.y));
-    }
-
-    if (pointEnd) {
-      pointEnd.setAttribute("cx", String(graph.end.x));
-      pointEnd.setAttribute("cy", String(graph.end.y));
-    }
-  }
-
-  function buildGraph(previousTotal, totalCount) {
-    const start = { x: 20, y: 78 };
-    const end = { x: 220, y: 78 };
-    const floor = 78;
-    const ceiling = 22;
-    const delta = Math.max(totalCount - previousTotal, 0);
-
-    if (delta === 0) {
-      return {
-        start,
-        end,
-        linePath: `M ${start.x} ${floor} C 84 ${floor}, 156 ${floor}, ${end.x} ${floor}`,
-        areaPath: `M ${start.x} ${floor} C 84 ${floor}, 156 ${floor}, ${end.x} ${floor} L ${end.x} 88 L ${start.x} 88 Z`
-      };
-    }
-
-    const startY = floor - 10;
-    const endY = ceiling;
-
-    return {
-      start: { x: start.x, y: startY },
-      end: { x: end.x, y: endY },
-      linePath: `M ${start.x} ${startY} C 86 ${startY + 6}, 154 ${endY + 10}, ${end.x} ${endY}`,
-      areaPath: `M ${start.x} ${startY} C 86 ${startY + 6}, 154 ${endY + 10}, ${end.x} ${endY} L ${end.x} 88 L ${start.x} 88 Z`
-    };
+    card.hidden = false;
   }
 
   async function postVisit(domain) {
     const response = await fetch(`${CONFIG.apiBaseUrl.replace(/\/$/, "")}/visit`, {
       method: "POST",
+      keepalive: true,
       headers: {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        domain,
+        domain: encodeURIComponent(domain),
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         page_path: window.location.pathname,
         page_title: document.title,
@@ -143,10 +96,19 @@
     const url = new URL(`${CONFIG.apiBaseUrl.replace(/\/$/, "")}/visit`);
     url.searchParams.set("domain", domain);
 
-    const response = await fetch(url.toString(), {
+    let response = await fetch(url.toString(), {
       method: "GET",
       cache: "no-store"
     });
+
+    if (!response.ok) {
+      const encodedUrl = new URL(`${CONFIG.apiBaseUrl.replace(/\/$/, "")}/visit`);
+      encodedUrl.searchParams.set("domain", encodeURIComponent(domain));
+      response = await fetch(encodedUrl.toString(), {
+        method: "GET",
+        cache: "no-store"
+      });
+    }
 
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}`);
