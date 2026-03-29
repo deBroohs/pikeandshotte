@@ -1997,8 +1997,9 @@ select {
   gap: 6px;
   align-self: start;
   min-width: 0;
-  width: 132px;
-  padding: 9px 10px;
+  width: fit-content;
+  justify-items: start;
+  padding: 8px 9px;
   border-radius: 14px;
   border: 1px solid rgba(84, 39, 20, 0.14);
   background:
@@ -2022,13 +2023,15 @@ select {
 .site-visitor-badges {
   display: grid;
   gap: 4px;
-  width: 100%;
+  width: auto;
+  justify-items: start;
 }
 
 .site-visitor-badge {
   display: block;
-  width: 100%;
-  height: 20px;
+  width: auto;
+  max-width: 94px;
+  height: 18px;
 }
 
 .tabbar {
