@@ -10,6 +10,7 @@ const configPath = path.join(rootDir, "site.config.json");
 const config = JSON.parse(await fs.readFile(configPath, "utf8"));
 const siteUrl = config.siteUrl.endsWith("/") ? config.siteUrl : `${config.siteUrl}/`;
 const ogImageUrl = new URL(config.ogImage, siteUrl).toString();
+const visitorCounterConfig = normalizeVisitorCounterConfig(config.plugins?.visitorCounter);
 
 const manifest = {
   name: config.siteName,
@@ -63,5 +64,29 @@ await fs.writeFile(path.join(rootDir, "site.webmanifest"), `${JSON.stringify(man
 await fs.writeFile(path.join(rootDir, "robots.txt"), `${robots}\n`, "utf8");
 await fs.writeFile(path.join(rootDir, "sitemap.xml"), sitemap, "utf8");
 await fs.writeFile(path.join(rootDir, "assets", "site", "metadata.json"), `${JSON.stringify(metadata, null, 2)}\n`, "utf8");
+await fs.writeFile(
+  path.join(rootDir, "assets", "site", "visitor-counter-config.js"),
+  `window.PikeShotteVisitorCounterConfig = ${JSON.stringify(visitorCounterConfig, null, 2)};\n`,
+  "utf8"
+);
 
-console.log("Generated site.webmanifest, robots.txt, sitemap.xml and metadata.json");
+console.log("Generated site.webmanifest, robots.txt, sitemap.xml, metadata.json and visitor counter config");
+
+function normalizeVisitorCounterConfig(rawConfig = {}) {
+  return {
+    enabled: Boolean(rawConfig.enabled),
+    provider: rawConfig.provider === "goatcounter" ? "goatcounter" : "goatcounter",
+    endpoint: typeof rawConfig.endpoint === "string" ? rawConfig.endpoint.trim() : "",
+    scriptUrl: typeof rawConfig.scriptUrl === "string" && rawConfig.scriptUrl.trim()
+      ? rawConfig.scriptUrl.trim()
+      : "https://gc.zgo.at/count.js",
+    allowLocal: Boolean(rawConfig.allowLocal),
+    debug: Boolean(rawConfig.debug),
+    summary: {
+      enabled: rawConfig.summary?.enabled !== false,
+      title: typeof rawConfig.summary?.title === "string" && rawConfig.summary.title.trim()
+        ? rawConfig.summary.title.trim()
+        : "Статистика сайта"
+    }
+  };
+}

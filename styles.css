@@ -1959,8 +1959,18 @@ select {
     url("./assets/arts/hero-battle.jpg") center 32% / cover no-repeat;
 }
 
+.app-header-top {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(232px, 272px);
+  gap: 18px;
+  align-items: start;
+  position: relative;
+  z-index: 1;
+}
+
 .app-masthead-simple {
   display: block;
+  min-width: 0;
 }
 
 .site-mark {
@@ -1980,6 +1990,64 @@ select {
 
 .site-edition {
   max-width: 56ch;
+}
+
+.site-visitor-card {
+  display: grid;
+  gap: 12px;
+  align-self: start;
+  min-width: 0;
+  padding: 16px 18px;
+  border-radius: 22px;
+  border: 1px solid rgba(84, 39, 20, 0.14);
+  background:
+    linear-gradient(160deg, rgba(255, 252, 247, 0.94), rgba(241, 230, 209, 0.9));
+  box-shadow: 0 14px 28px rgba(84, 39, 20, 0.1);
+  backdrop-filter: blur(6px);
+}
+
+.site-visitor-kicker,
+.site-visitor-note {
+  margin: 0;
+}
+
+.site-visitor-kicker {
+  color: var(--accent-dark);
+  font: 800 0.72rem/1.1 var(--ui-font);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.site-visitor-stats {
+  display: grid;
+  gap: 10px;
+}
+
+.site-visitor-stat {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.62);
+  border: 1px solid rgba(84, 39, 20, 0.1);
+}
+
+.site-visitor-label {
+  color: #5d5448;
+  font: 700 0.75rem/1.1 var(--ui-font);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.site-visitor-badge {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.site-visitor-note {
+  color: #5d5448;
+  font: 600 0.78rem/1.4 var(--ui-font);
 }
 
 .tabbar {
@@ -2667,6 +2735,10 @@ select {
 }
 
 @media (max-width: 1180px) {
+  .app-header-top {
+    grid-template-columns: minmax(0, 1fr) minmax(216px, 248px);
+  }
+
   .armies-toolbar {
     grid-template-columns: 1fr;
     grid-template-areas:
@@ -2708,6 +2780,14 @@ select {
 }
 
 @media (max-width: 760px) {
+  .app-header-top {
+    display: block;
+  }
+
+  .site-visitor-card {
+    display: none;
+  }
+
   .app-header {
     padding: 20px;
   }

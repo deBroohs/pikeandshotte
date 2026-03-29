@@ -13,7 +13,9 @@ const requiredFiles = [
   "robots.txt",
   "sitemap.xml",
   "assets/site/favicon.svg",
-  "assets/site/metadata.json"
+  "assets/site/metadata.json",
+  "assets/site/visitor-counter-config.js",
+  "plugins/visitor-counter/runtime.js"
 ];
 
 for (const relativePath of requiredFiles) {
@@ -37,7 +39,9 @@ const assertions = [
   ["json-ld", /<script type="application\/ld\+json">[\s\S]*"@type": "WebApplication"/],
   ["css versioning", /styles\.css\?v=/],
   ["rules data versioning", /rules-data\.js\?v=/],
-  ["app versioning", /app\.js\?v=/]
+  ["app versioning", /app\.js\?v=/],
+  ["visitor counter config versioning", /visitor-counter-config\.js\?v=/],
+  ["visitor counter runtime versioning", /plugins\/visitor-counter\/runtime\.js\?v=/]
 ];
 
 for (const [label, pattern] of assertions) {

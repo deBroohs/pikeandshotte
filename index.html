@@ -32,7 +32,7 @@
   <link rel="manifest" href="./site.webmanifest">
   <link rel="sitemap" type="application/xml" title="Sitemap" href="./sitemap.xml">
   <link rel="preload" href="./assets/arts/hero-battle.jpg" as="image" fetchpriority="high">
-  <link rel="stylesheet" href="./styles.css?v=20260325-32">
+  <link rel="stylesheet" href="./styles.css?v=20260329-3">
   <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -54,17 +54,49 @@
 <body>
   <div class="page-shell">
     <header class="app-header">
-  <div class="app-masthead app-masthead-simple">
-    <div class="site-mark">
-      <p class="eyebrow">Pike &amp; Shotte Companion</p>
-      <div class="site-heading-row">
-        <div>
-          <h1>Pike &amp; Shotte War Room</h1>
-          <p class="site-edition">Built around Pike &amp; Shotte · 1st Edition Rules</p>
+  <div class="app-header-top">
+    <div class="app-masthead app-masthead-simple">
+      <div class="site-mark">
+        <p class="eyebrow">Pike &amp; Shotte Companion</p>
+        <div class="site-heading-row">
+          <div>
+            <h1>Pike &amp; Shotte War Room</h1>
+            <p class="site-edition">Built around Pike &amp; Shotte · 1st Edition Rules</p>
+          </div>
+          <span class="edition-pill">1st Edition</span>
         </div>
-        <span class="edition-pill">1st Edition</span>
       </div>
     </div>
+    <aside class="site-visitor-card" aria-label="Статистика посещений сайта">
+      <p class="site-visitor-kicker">Статистика сайта</p>
+      <div class="site-visitor-stats">
+        <div class="site-visitor-stat">
+          <span class="site-visitor-label">Всего визитов</span>
+          <img
+            class="site-visitor-badge"
+            src="https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fdebroohs.github.io%2Fpikeandshotte%2F&label=all&labelColor=%235a2a17&countColor=%237a3b1f&style=flat"
+            alt="Общее количество посещений сайта"
+            loading="lazy"
+            decoding="async"
+            referrerpolicy="no-referrer"
+            onerror="this.closest('.site-visitor-stat').hidden=true"
+          >
+        </div>
+        <div class="site-visitor-stat">
+          <span class="site-visitor-label">За сегодня</span>
+          <img
+            class="site-visitor-badge"
+            src="https://api.visitorbadge.io/api/daily?path=https%3A%2F%2Fdebroohs.github.io%2Fpikeandshotte%2F&label=today&labelColor=%2323493d&countColor=%23315c74&style=flat"
+            alt="Количество посещений сайта за сегодня"
+            loading="lazy"
+            decoding="async"
+            referrerpolicy="no-referrer"
+            onerror="this.closest('.site-visitor-stat').hidden=true"
+          >
+        </div>
+      </div>
+      <p class="site-visitor-note">Публичный счётчик посещений для live-версии сайта.</p>
+    </aside>
   </div>
   <nav class="tabbar" aria-label="Основная навигация">
     <button id="tab-dashboard" class="tab is-active" data-tab-target="dashboard" type="button" aria-selected="true">
@@ -395,5 +427,7 @@
 
   <script src="./rules-data.js?v=20260325-30"></script>
   <script src="./app.js?v=20260325-30"></script>
+  <script src="./assets/site/visitor-counter-config.js?v=20260329-2"></script>
+  <script src="./plugins/visitor-counter/runtime.js?v=20260329-2"></script>
 </body>
 </html>
